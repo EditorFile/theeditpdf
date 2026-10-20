@@ -582,16 +582,21 @@ if(r){
         sec.className="seo-content";
         var c=(window.__SEOCONTENT&&window.__SEOCONTENT[r.t])||("<p>"+r.d.replace(/</g,"&lt;")+"</p>");
         sec.innerHTML=c;
-        /* TheEditPDF: per-tool video tutorial embed */
-        var VID={edit:"MwdPYU2pfaw",merge:"95rKIpyCIzU",compress:"QyLuJWE_vSI",word:"Db8rCkwk48c",sign:"8pSD6qSccIk"};
-        if(VID[r.t]){
-          var vw=document.createElement("div");vw.className="video-tutorial";
-          vw.innerHTML='<h3>Video tutorial</h3><p>Prefer watching? See this tool in action in under 2 minutes:</p><div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/'+VID[r.t]+'?rel=0" title="TheEditPDF video tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>';
-          sec.appendChild(vw);
-        }
         h1.insertAdjacentElement("afterend",sec);
       }
     }
+    /* TheEditPDF: per-tool video tutorial embed (shell pages: seo-content is prerendered) */
+    (function(){
+      var VID={edit:"MwdPYU2pfaw",merge:"95rKIpyCIzU",compress:"QyLuJWE_vSI",word:"Db8rCkwk48c",sign:"8pSD6qSccIk"};
+      if(VID[r.t]&&!document.querySelector(".video-tutorial")){
+        var s=document.querySelector("section.seo-content");
+        if(s){
+          var vw=document.createElement("div");vw.className="video-tutorial";
+          vw.innerHTML='<h3>Video tutorial</h3><p>Prefer watching? See this tool in action in under 2 minutes:</p><div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/'+VID[r.t]+'?rel=0" title="TheEditPDF video tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>';
+          s.appendChild(vw);
+        }
+      }
+    })();
     if(!r.page){(function tryOpen(attempt){var b=document.querySelector('[data-tool="'+r.t+'"]');if(b){b.click();setTimeout(function(){var opened=false;try{var o=document.getElementById("overlay");if(o&&o.classList.contains("open"))opened=true;var es=document.getElementById("editorShell");if(es&&(es.classList.contains("open")||es.getAttribute("aria-hidden")==="false"))opened=true;var cs=document.getElementById("compareShell");if(cs&&cs.classList.contains("open"))opened=true;var rs=document.getElementById("redactShell");if(rs&&rs.classList.contains("open"))opened=true}catch(e){}if(!opened&&attempt<3)setTimeout(function(){tryOpen(attempt+1)},400)},600)}else if(attempt<3){setTimeout(function(){tryOpen(attempt+1)},400)}})(0)}
   });
 }
