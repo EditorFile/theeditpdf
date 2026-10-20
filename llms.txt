@@ -1,0 +1,37 @@
+# TheEditPDF
+
+> Free online PDF tools that run 100% in your browser. Edit, merge, split,
+> compress, convert, sign, protect and redact PDFs with no signup, no watermark,
+> and no file uploads — documents never leave the user's device.
+
+## Tools
+
+- [PDF Editor](https://theeditpdf.com/pdf-editor): Edit existing PDF text in place with automatic font/size/color matching; add text, images, links, forms, signatures, shapes, highlights and annotations.
+- [Sign PDF](https://theeditpdf.com/sign-pdf): Sign PDFs by typing (handwriting fonts), drawing, or uploading a signature image; place and resize on any page.
+- [Merge PDF](https://theeditpdf.com/merge-pdf): Combine multiple PDFs into one file in a chosen order.
+- [Split PDF](https://theeditpdf.com/split-pdf): Split a PDF into one file per page, delivered as a ZIP.
+- [Delete Pages](https://theeditpdf.com/delete-pages): Remove selected pages or page ranges from a PDF.
+- [Rotate PDF](https://theeditpdf.com/rotate-pdf): Rotate all PDF pages 90° clockwise, 90° counter-clockwise or 180°.
+- [Compress PDF](https://theeditpdf.com/compress-pdf): Reduce PDF file size with Smallest/Balanced/Sharper quality levels.
+- [PDF to JPG](https://theeditpdf.com/pdf-to-jpg): Convert every PDF page to a JPG image, delivered as a ZIP.
+- [JPG to PDF](https://theeditpdf.com/jpg-to-pdf): Combine JPG/PNG images into a single PDF.
+- [Watermark PDF](https://theeditpdf.com/watermark-pdf): Stamp diagonal text watermarks (e.g. DRAFT, CONFIDENTIAL) with adjustable opacity and size.
+- [Page Numbers](https://theeditpdf.com/page-numbers): Add page numbers at top or bottom center, starting from any number.
+- [PDF to Text](https://theeditpdf.com/pdf-to-text): Extract selectable text from a PDF into a plain-text file.
+- [OCR PDF](https://theeditpdf.com/ocr-pdf): Recognize text in scanned PDFs and images with the in-browser Tesseract engine.
+- [PDF to Word](https://theeditpdf.com/pdf-to-word): Convert PDF text into an editable .docx document.
+- [PDF to PowerPoint](https://theeditpdf.com/pdf-to-powerpoint): Convert PDF pages into an editable .pptx presentation.
+- [Repair PDF](https://theeditpdf.com/pdf-repair): Attempt recovery of corrupted or damaged PDF files.
+- [PDF Metadata](https://theeditpdf.com/pdf-metadata): View and edit PDF document metadata (title, author, subject, keywords).
+- [Unlock PDF](https://theeditpdf.com/unlock-pdf): Remove PDF passwords and restrictions for printing, copying and editing.
+- [Protect PDF](https://theeditpdf.com/protect-pdf): Add password protection with AES-256 encryption; control printing, copying and editing.
+- [Compare PDF](https://theeditpdf.com/compare-pdf): View two PDFs side by side, page by page, to spot differences.
+- [Redact PDF](https://theeditpdf.com/redact-pdf): Permanently black out sensitive text and data in a PDF.
+- [Excel to PDF](https://theeditpdf.com/excel-to-pdf): Convert XLSX spreadsheets into PDF documents.
+- [PDF to Excel](https://theeditpdf.com/pdf-to-excel): Extract tables from a PDF into editable XLSX spreadsheets.
+
+## Key facts
+
+- All processing is client-side (JavaScript/WebAssembly in the browser); files are never uploaded to a server.
+- Free to use: no accounts, no watermarks, no usage caps advertised.
+- Site: https://theeditpdf.com/ — Privacy: https://theeditpdf.com/privacy — Terms: https://theeditpdf.com/terms
