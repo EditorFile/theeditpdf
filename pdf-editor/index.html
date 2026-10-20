@@ -381,6 +381,12 @@ transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 .seo-content ul,.seo-content ol{margin:0 0 16px;padding-left:22px}
 .seo-content li{margin-bottom:7px}
 .seo-content .faq-q{font-weight:700;margin:16px 0 4px}
+/* Video tutorial embed */
+.video-tutorial{margin:26px 0 8px;padding:18px;border:1px solid #e8e2d5;border-radius:12px;background:#fbf9f4}
+.video-tutorial h3{font-family:Georgia,'Times New Roman',serif;font-size:1.15rem;font-weight:400;margin:0 0 8px}
+.video-tutorial p{margin:0 0 12px;font-size:.95rem}
+.video-wrap{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:8px}
+.video-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:0}
 /* Legal pages */
 .legal-page{max-width:760px;margin:0 auto;padding:8px 16px 48px;line-height:1.8}
 .legal-page h2{font-family:Georgia,'Times New Roman',serif;font-size:1.35rem;margin:28px 0 10px;font-weight:400}
@@ -576,6 +582,13 @@ if(r){
         sec.className="seo-content";
         var c=(window.__SEOCONTENT&&window.__SEOCONTENT[r.t])||("<p>"+r.d.replace(/</g,"&lt;")+"</p>");
         sec.innerHTML=c;
+        /* TheEditPDF: per-tool video tutorial embed */
+        var VID={edit:"MwdPYU2pfaw",merge:"95rKIpyCIzU",compress:"QyLuJWE_vSI",word:"Db8rCkwk48c",sign:"8pSD6qSccIk"};
+        if(VID[r.t]){
+          var vw=document.createElement("div");vw.className="video-tutorial";
+          vw.innerHTML='<h3>Video tutorial</h3><p>Prefer watching? See this tool in action in under 2 minutes:</p><div class="video-wrap"><iframe src="https://www.youtube-nocookie.com/embed/'+VID[r.t]+'?rel=0" title="TheEditPDF video tutorial" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>';
+          sec.appendChild(vw);
+        }
         h1.insertAdjacentElement("afterend",sec);
       }
     }
