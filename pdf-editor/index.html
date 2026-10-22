@@ -1490,7 +1490,29 @@ else{throw new Error("expected "+(beforeCount+pages.length)+" pages, got "+after
 }
 async function _pmExtract(pages){if(!K||!W||window.__pmBusy)return;pages=pages.filter(function(p){return p>=1&&p<=W.numPages;}).sort(function(a,b){return a-b;});if(!pages.length)return;window.__pmBusy=true;try{var LIB=window.PDFLib;var t=await LIB.PDFDocument.load(K.slice());var nd=await LIB.PDFDocument.create();var cp3=await nd.copyPages(t,pages.map(function(p){return p-1;}));for(var i=0;i<cp3.length;i++)nd.addPage(cp3[i]);try{var ti=t.getTitle();if(ti)nd.setTitle(ti);}catch(e){}var bytes=await nd.save();var base=(G||"document").replace(/\.pdf$/i,"");await _pmDownload(bytes,base+"-pages-"+pages.join("-")+".pdf");}catch(e){ne("Could not extract pages.","error");}finally{window.__pmBusy=false;}}
 async function _pmDelete(pages){if(!K||!W||window.__pmBusy)return;pages=pages.filter(function(p){return p>=1&&p<=W.numPages;}).sort(function(a,b){return b-a;});if(!pages.length)return;if(pages.length>=W.numPages){ne("A document needs at least one page.","error");return;}window.__pmBusy=true;try{_=_.filter(function(a){return pages.indexOf(a.page)===-1;});_.forEach(function(a){var s2=0;for(var i=0;i<pages.length;i++)if(pages[i]<a.page)s2++;a.page-=s2;});te={};V=null;$=null;var t=await window.PDFLib.PDFDocument.load(K.slice());for(var i=0;i<pages.length;i++){try{t.removePage(pages[i]-1);}catch(e){}}K=await t.save();await window._pmReload();ne(pages.length>1?pages.length+" pages deleted.":"Page deleted.","success");}catch(e){ne("Could not delete pages.","error");}finally{window.__pmBusy=false;}}
-document.getElementById("pgDel").onclick=async function(){if(!K||!W||window.__pgDelBusy)return;if(W.numPages<=1){ne("A document needs at least one page.","error");return}var dp=Y;if(!(dp>=1&&dp<=W.numPages))return;window.__pgDelBusy=true;var _pb=document.getElementById("pgDel");if(_pb)_pb.disabled=true;try{_=_.filter(function(a){return a.page!==dp;});_.forEach(function(a){if(a.page>dp)a.page--});V=null;$=null;var t;try{t=await window.PDFLib.PDFDocument.load(K.slice())}catch(e){ne("Could not open the document to delete the page.","error");return}try{t.removePage(dp-1)}catch(e){ne("Could not remove page "+dp+".","error");return}var nk;try{nk=await t.save()}catch(e){ne("Could not rebuild the document after page delete.","error");return}K=nk;try{W.destroy()}catch(e){}W=null;try{W=await window.pdfjsLib.getDocument({data:K.slice()}).promise}catch(e){ne("Could not reload the document after page delete.","error");return}if(Y>W.numPages)Y=W.numPages;try{await bt()}catch(e){}_updPgLbl();try{await se(Y)}catch(e){}ae();}finally{window.__pgDelBusy=false;if(_pb)_pb.disabled=false;}};document.getElementById("pgDel").onclick=function(){if(!K||!W||window.__pmBusy)return;_pmDelete(_pmSel.size?Array.from(_pmSel):[Y]);};document.getElementById("pgDup").onclick=function(){if(!K||!W)return;_pmDuplicate(_pmSel.size?Array.from(_pmSel):[Y]);};document.getElementById("pgExtract").onclick=function(){if(!K||!W||window.__pmBusy)return;_pmShowExtract();};
+document.getElementById("pgDel").onclick=async function(){if(!K||!W||window.__pgDelBusy)return;if(W.numPages<=1){ne("A document needs at least one page.","error");return}var dp=Y;if(!(dp>=1&&dp<=W.numPages))return;window.__pgDelBusy=true;var _pb=document.getElementById("pgDel");if(_pb)_pb.disabled=true;try{_=_.filter(function(a){return a.page!==dp;});_.forEach(function(a){if(a.page>dp)a.page--});V=null;$=null;var t;try{t=await window.PDFLib.PDFDocument.load(K.slice())}catch(e){ne("Could not open the document to delete the page.","error");return}try{t.removePage(dp-1)}catch(e){ne("Could not remove page "+dp+".","error");return}var nk;try{nk=await t.save()}catch(e){ne("Could not rebuild the document after page delete.","error");return}K=nk;try{W.destroy()}catch(e){}W=null;try{W=await window.pdfjsLib.getDocument({data:K.slice()}).promise}catch(e){ne("Could not reload the document after page delete.","error");return}if(Y>W.numPages)Y=W.numPages;try{await bt()}catch(e){}_updPgLbl();try{await se(Y)}catch(e){}ae();}finally{window.__pgDelBusy=false;if(_pb)_pb.disabled=false;}};document.getElementById("pgDel").onclick=function(){if(!K||!W||window.__pmBusy)return;_pmDelete(_pmSel.size?Array.from(_pmSel):[Y]);};document.getElementById("pgDup").onclick=async function(){
+if(!window.K){ne("No PDF loaded","error");return;}
+try{
+var LIB=window.PDFLib;
+var _pages=(_pmSel&&_pmSel.size?Array.from(_pmSel):[window.Y||1]);
+var _src=await LIB.PDFDocument.load(window.K.slice());
+var _before=_src.getPageCount();
+_pages=_pages.filter(function(p){return p>=1&&p<=_before;});
+if(!_pages.length)_pages=[1];
+var _newDoc=await LIB.PDFDocument.create();
+var _dupSet={};_pages.forEach(function(p){_dupSet[p]=true;});
+for(var _p=1;_p<=_before;_p++){
+var _cp=await _newDoc.copyPages(_src,[_p-1]);
+_newDoc.addPage(_cp[0]);
+if(_dupSet[_p]){var _cp2=await _newDoc.copyPages(_src,[_p-1]);_newDoc.addPage(_cp2[0]);}
+}
+window.K=await _newDoc.save();
+try{window.W.destroy()}catch(e){}
+window.W=await window.pdfjsLib.getDocument({data:window.K.slice()}).promise;
+await bt();_updPgLbl();se(window.Y||1);
+ne("Page duplicated.","success");
+}catch(e){ne("Could not duplicate: "+(e&&e.message?e.message:e),"error");}
+};document.getElementById("pgExtract").onclick=function(){if(!K||!W||window.__pmBusy)return;_pmShowExtract();};
 /* ---------- Extract pages dialog ---------- */
 function _pmShowExtract(){if(!K||!W)return;var ov=document.getElementById("extractOverlay"),list=document.getElementById("extractPageList");if(!ov||!list)return;list.innerHTML="";var pre=_pmSel.size?Array.from(_pmSel):[Y];for(var p=1;p<=W.numPages;p++){(function(pg){var lb=document.createElement("label");lb.className="pgm-pagechk";var cb=document.createElement("input");cb.type="checkbox";cb.value=pg;cb.checked=pre.indexOf(pg)>-1;lb.appendChild(cb);lb.appendChild(document.createTextNode("Page "+pg));list.appendChild(lb);})(p);}ov.classList.add("open");ov.setAttribute("aria-hidden","false");}
 function _pmCloseExtract(){var ov=document.getElementById("extractOverlay");if(ov){ov.classList.remove("open");ov.setAttribute("aria-hidden","true");}}
