@@ -1454,28 +1454,38 @@ pages=(pages||[]).filter(function(p){return p>=1&&p<=beforeCount;});
 if(!pages.length)pages=[Y];
 try{
 var LIB=window.PDFLib;
-var t=await LIB.PDFDocument.load(K.slice());
+// Build new doc: for each original page, add it, then add duplicates right after
+var newDoc=await LIB.PDFDocument.create();
 var src=await LIB.PDFDocument.load(K.slice());
-// duplicate each page right after its original (process in descending order to keep indices stable)
-var desc=pages.slice().sort(function(a,b){return b-a;});
-for(var d=0;d<desc.length;d++){
-var cp=await t.copyPages(src,[desc[d]-1]);
-if(cp&&cp.length)t.insertPage(desc[d],cp[0]);
+var dupSet={};pages.forEach(function(p){dupSet[p]=true;});
+for(var p=1;p<=beforeCount;p++){
+var cp=await newDoc.copyPages(src,[p-1]);
+newDoc.addPage(cp[0]);
+if(dupSet[p]){
+var cp2=await newDoc.copyPages(src,[p-1]);
+newDoc.addPage(cp2[0]);
 }
-// remap annotations
-function sh(p){var s=0;for(var i=0;i<pages.length;i++)if(pages[i]<p)s++;return p+s;}
+}
+// remap annotations: shift page numbers for pages after each duplicated page
+function newPageNum(orig){
+var s=0;for(var i=0;i<pages.length;i++)if(pages[i]<orig)s++;
+return orig+s;
+}
 var toClone=_.filter(function(a){return pages.indexOf(a.page)>-1;});
-_.forEach(function(a){a.page=sh(a.page);});
-toClone.forEach(function(a){var c2;try{c2=JSON.parse(JSON.stringify(a));}catch(e){return;}c2.id=X++;c2.page=sh(a.page)+1;_.push(c2);});
+_.forEach(function(a){a.page=newPageNum(a.page);});
+toClone.forEach(function(a){
+var c2;try{c2=JSON.parse(JSON.stringify(a));}catch(e){return;}
+c2.id=X++;c2.page=newPageNum(a.page)+1;_.push(c2);
+});
 te={};V=null;$=null;
-K=await t.save();
-// reload viewer inline (same pattern as working pgAdd)
+K=await newDoc.save();
+// reload viewer inline
 try{W.destroy()}catch(e){}
 W=await window.pdfjsLib.getDocument({data:K.slice()}).promise;
 await bt();_updPgLbl();se(Y);
 var afterCount=W?W.numPages:0;
 if(afterCount>=beforeCount+pages.length){ne(pages.length>1?pages.length+" pages duplicated.":"Page duplicated.","success");}
-else{ne("Duplicate may not have applied — please check pages.","error");}
+else{throw new Error("expected "+(beforeCount+pages.length)+" pages, got "+afterCount);}
 }catch(e){ne("Could not duplicate the page: "+(e&&e.message?e.message:e),"error");}
 }
 async function _pmExtract(pages){if(!K||!W||window.__pmBusy)return;pages=pages.filter(function(p){return p>=1&&p<=W.numPages;}).sort(function(a,b){return a-b;});if(!pages.length)return;window.__pmBusy=true;try{var LIB=window.PDFLib;var t=await LIB.PDFDocument.load(K.slice());var nd=await LIB.PDFDocument.create();var cp3=await nd.copyPages(t,pages.map(function(p){return p-1;}));for(var i=0;i<cp3.length;i++)nd.addPage(cp3[i]);try{var ti=t.getTitle();if(ti)nd.setTitle(ti);}catch(e){}var bytes=await nd.save();var base=(G||"document").replace(/\.pdf$/i,"");await _pmDownload(bytes,base+"-pages-"+pages.join("-")+".pdf");}catch(e){ne("Could not extract pages.","error");}finally{window.__pmBusy=false;}}
