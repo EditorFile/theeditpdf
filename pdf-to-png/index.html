@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF to PNG Online Free | TheEditPDF</title>
+<meta name="description" content="Convert PDF pages to PNG images online free. Choose 72, 150 or 300 DPI, download individual PNGs or all as a ZIP. 100% in your browser — no signup, no watermark, files never leave your device.">
+<meta name="keywords" content="pdf to png, convert pdf to png, pdf to image, pdf pages to png, pdf to png high quality, pdf to png 300 dpi">
+<link rel="canonical" href="https://theeditpdf.com/pdf-to-png">
+<meta property="og:title" content="PDF to PNG Online Free | TheEditPDF">
+<meta property="og:description" content="Convert every PDF page to a high-quality PNG image. Choose DPI, download one by one or all as ZIP. Free, in-browser, no signup.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"PDF to PNG","url":"https://theeditpdf.com/pdf-to-png","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I convert a PDF to PNG?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, choose a DPI (72 for web, 150 for good quality, 300 for print), and click Convert. Each page becomes a PNG image you can download individually or all at once as a ZIP file."}},
+{"@type":"Question","name":"What DPI should I choose?","acceptedAnswer":{"@type":"Answer","text":"72 DPI is fine for web use and small files. 150 DPI gives sharp images for documents and presentations. 300 DPI is print quality — best for publishing, but the files are larger."}},
+{"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion runs 100% in your browser using pdf.js. Your file never leaves your device."}},
+{"@type":"Question","name":"Can I convert only some pages?","acceptedAnswer":{"@type":"Answer","text":"Yes. After conversion, download only the pages you need — each PNG has its own download button. Or use the ZIP to grab everything at once."}},
+{"@type":"Question","name":"Does it work on mobile?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tool works on any modern browser, including phones and tablets. Very large PDFs may be slower on older devices."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+:root{--ivory:#faf7f0;--charcoal:#1a1a1a;--gold:#a67c2e;--gold-light:#c9a96e;--line:#e5ddd0;--muted:#666}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--ivory);color:var(--charcoal);line-height:1.6}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:1.4rem;font-weight:700;text-decoration:none;color:var(--charcoal)}
+.logo span{color:var(--gold)}
+nav a{margin-left:20px;text-decoration:none;color:var(--charcoal);font-size:.95rem}
+nav a:hover{color:var(--gold)}
+main{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{font-size:2.2rem;text-align:center;margin-bottom:8px}
+.subtitle{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:32px}
+.tool-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.drop-zone{border:2px dashed var(--line);border-radius:12px;padding:48px 24px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--gold);background:#fdf9f0}
+.drop-zone .icon{font-size:3rem;margin-bottom:12px}
+.drop-zone p{color:var(--muted)}
+.drop-zone input{display:none}
+.file-info{display:none;margin-top:20px;padding:16px;background:#f9f6f0;border-radius:8px}
+.file-info strong{display:block;font-size:1.05rem}
+.file-info span{color:var(--muted);font-size:.9rem}
+.dpi-picker{margin-top:24px}
+.dpi-picker label{font-weight:700;display:block;margin-bottom:12px}
+.dpi-options{display:flex;flex-wrap:wrap;gap:10px}
+.dpi-btn{padding:12px 20px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:1rem;transition:.15s}
+.dpi-btn:hover{border-color:var(--gold)}
+.dpi-btn.active{border-color:var(--gold);background:#fdf6e3;font-weight:700}
+.dpi-note{margin-top:8px;color:var(--muted);font-size:.9rem}
+.convert-btn{display:block;width:100%;margin-top:28px;padding:16px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-size:1.15rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.convert-btn:hover{background:#8a6a28}
+.convert-btn:disabled{opacity:.5;cursor:not-allowed}
+.progress{display:none;margin-top:24px}
+.progress-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);width:0%;transition:width .3s}
+.progress-text{text-align:center;margin-top:8px;color:var(--muted);font-size:.9rem}
+.results{display:none;margin-top:24px}
+.results h3{margin-bottom:12px}
+.zip-btn{display:block;width:100%;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:20px}
+.zip-btn:hover{background:#1b5e20}
+.png-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px}
+.png-card{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.png-card img{width:100%;display:block;background:#f5f5f5;max-height:240px;object-fit:contain}
+.png-card-body{padding:12px}
+.png-card-body strong{font-size:.95rem;display:block}
+.png-card-body span{color:var(--muted);font-size:.85rem}
+.png-dl{display:block;width:100%;margin-top:8px;padding:8px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:inherit}
+.png-dl:hover{background:#8a6a28}
+.error{display:none;margin-top:16px;padding:14px;background:#fde8e8;border:1px solid #f5c6c6;border-radius:8px;color:#c62828}
+.faq{margin-top:48px}
+.faq h2{font-size:1.5rem;margin-bottom:20px}
+.faq-item{margin-bottom:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+.faq-q{font-weight:700;margin-bottom:6px}
+footer{text-align:center;padding:32px 20px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:48px}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:600px){h1{font-size:1.6rem}.tool-card{padding:20px}.drop-zone{padding:32px 16px}}
+</style>
+</head>
+<body>
+<header>
+<a href="https://theeditpdf.com" class="logo">The<span>Edit</span>PDF</a>
+<nav>
+<a href="https://theeditpdf.com">All Tools</a>
+<a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>
+<a href="https://theeditpdf.com/pdf-to-jpg">PDF to JPG</a>
+</nav>
+</header>
+
+<main>
+<h1>PDF to PNG Online Free</h1>
+<p class="subtitle">Convert every PDF page to a high-quality PNG image. Choose DPI, download one by one or all as ZIP. 100% free, in your browser — no signup, no watermark.</p>
+
+<div class="tool-card">
+<div class="drop-zone" id="dropZone">
+<div class="icon">🖼️</div>
+<p><strong>Drop your PDF here</strong> or click to browse</p>
+<p style="margin-top:8px;font-size:.85rem">Max 50MB · Works on any device</p>
+<input type="file" id="fileInput" accept="application/pdf">
+</div>
+
+<div class="file-info" id="fileInfo">
+<strong id="fileName"></strong>
+<span id="fileMeta"></span>
+</div>
+
+<div class="dpi-picker">
+<label>Image quality (DPI):</label>
+<div class="dpi-options">
+<button class="dpi-btn" data-dpi="72">72 DPI — Web</button>
+<button class="dpi-btn active" data-dpi="150">150 DPI — Sharp</button>
+<button class="dpi-btn" data-dpi="300">300 DPI — Print</button>
+</div>
+<p class="dpi-note">Higher DPI = sharper images but larger files. 150 DPI is the best balance for most uses.</p>
+</div>
+
+<button class="convert-btn" id="convertBtn" disabled>Convert to PNG</button>
+
+<div class="progress" id="progress">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<p class="progress-text" id="progressText">Rendering pages…</p>
+</div>
+
+<div class="error" id="error"></div>
+
+<div class="results" id="results">
+<h3 id="resultsTitle"></h3>
+<button class="zip-btn" id="zipBtn">⬇ Download All as ZIP</button>
+<div class="png-grid" id="pngGrid"></div>
+</div>
+</div>
+
+<div class="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item">
+<p class="faq-q">How do I convert a PDF to PNG?</p>
+<p>Upload your PDF, choose a DPI (72 for web, 150 for good quality, 300 for print), and click Convert. Each page becomes a PNG image you can download individually or all at once as a ZIP file.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">What DPI should I choose?</p>
+<p>72 DPI is fine for web use and small files. 150 DPI gives sharp images for documents and presentations. 300 DPI is print quality — best for publishing, but the files are larger.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Is my PDF uploaded to a server?</p>
+<p>No. Conversion runs 100% in your browser using pdf.js. Your file never leaves your device.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Can I convert only some pages?</p>
+<p>Yes. After conversion, download only the pages you need — each PNG has its own download button. Or use the ZIP to grab everything at once.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Does it work on mobile?</p>
+<p>Yes. The tool works on any modern browser, including phones and tablets. Very large PDFs may be slower on older devices.</p>
+</div>
+</div>
+</main>
+
+<footer>
+<p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+<p style="margin-top:8px">Files are processed 100% in your browser. Nothing is uploaded.</p>
+</footer>
+
+<script>
+(function(){
+if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js';}
+var file=null,selectedDpi=150,pngs=[];
+var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput'),
+fileInfo=document.getElementById('fileInfo'),fileName=document.getElementById('fileName'),fileMeta=document.getElementById('fileMeta'),
+convertBtn=document.getElementById('convertBtn'),progress=document.getElementById('progress'),
+progressFill=document.getElementById('progressFill'),progressText=document.getElementById('progressText'),
+errorBox=document.getElementById('error'),results=document.getElementById('results'),
+resultsTitle=document.getElementById('resultsTitle'),pngGrid=document.getElementById('pngGrid'),
+zipBtn=document.getElementById('zipBtn');
+
+function showError(msg){errorBox.textContent=msg;errorBox.style.display='block';}
+function hideError(){errorBox.style.display='none';}
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+
+dropZone.addEventListener('click',function(){fileInput.click();});
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('dragover');});
+dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('dragover');if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);});
+fileInput.addEventListener('change',function(){if(fileInput.files.length)handleFile(fileInput.files[0]);fileInput.value='';});
+
+function handleFile(f){
+if(f.type!=='application/pdf'&&!f.name.toLowerCase().endsWith('.pdf')){showError('Please select a PDF file.');return;}
+if(f.size>50*1024*1024){showError('File is larger than 50MB. Please use a smaller PDF.');return;}
+hideError();file=f;
+fileName.textContent=f.name;
+fileMeta.textContent=fmtBytes(f.size)+' · Ready to convert';
+fileInfo.style.display='block';
+convertBtn.disabled=false;
+results.style.display='none';pngGrid.innerHTML='';pngs=[];
+}
+
+document.querySelectorAll('.dpi-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+document.querySelectorAll('.dpi-btn').forEach(function(b){b.classList.remove('active');});
+btn.classList.add('active');
+selectedDpi=parseInt(btn.dataset.dpi,10);
+});
+});
+
+convertBtn.addEventListener('click',async function(){
+if(!file)return;
+hideError();
+convertBtn.disabled=true;
+progress.style.display='block';
+results.style.display='none';pngGrid.innerHTML='';pngs=[];
+try{
+if(!window.pdfjsLib)throw new Error('PDF engine could not load. Check your connection and try again.');
+var buf=await file.arrayBuffer();
+var doc=await window.pdfjsLib.getDocument({data:buf}).promise;
+var total=doc.numPages;
+for(var p=1;p<=total;p++){
+progressText.textContent='Rendering page '+p+' of '+total+'…';
+progressFill.style.width=Math.round((p-1)/total*100)+'%';
+var page=await doc.getPage(p);
+var scale=selectedDpi/72;
+var viewport=page.getViewport({scale:scale});
+var canvas=document.createElement('canvas');
+canvas.width=Math.floor(viewport.width);canvas.height=Math.floor(viewport.height);
+var ctx=canvas.getContext('2d');
+await page.render({canvasContext:ctx,viewport:viewport}).promise;
+var blob=await new Promise(function(res){canvas.toBlob(res,'image/png');});
+var url=URL.createObjectURL(blob);
+pngs.push({page:p,blob:blob,url:url,width:canvas.width,height:canvas.height});
+}
+progressFill.style.width='100%';
+progressText.textContent='Done!';
+resultsTitle.textContent=total+' PNG image'+(total>1?'s':'')+' ready — '+selectedDpi+' DPI';
+pngs.forEach(function(item){
+var card=document.createElement('div');card.className='png-card';
+var img=document.createElement('img');img.src=item.url;img.alt='Page '+item.page;
+var body=document.createElement('div');body.className='png-card-body';
+var st=document.createElement('strong');st.textContent='Page '+item.page;
+var sp=document.createElement('span');sp.textContent=item.width+' × '+item.height+' px · '+fmtBytes(item.blob.size);
+var dl=document.createElement('button');dl.className='png-dl';dl.textContent='⬇ Download PNG';
+dl.addEventListener('click',function(){downloadBlob(item.blob,'page-'+item.page+'.png');});
+body.appendChild(st);body.appendChild(sp);body.appendChild(dl);
+card.appendChild(img);card.appendChild(body);
+pngGrid.appendChild(card);
+});
+progress.style.display='none';
+results.style.display='block';
+}catch(e){
+progress.style.display='none';
+showError('Conversion failed: '+(e&&e.message?e.message:e));
+}
+convertBtn.disabled=false;
+});
+
+zipBtn.addEventListener('click',async function(){
+if(!pngs.length)return;
+zipBtn.disabled=true;zipBtn.textContent='Creating ZIP…';
+try{
+var zip=new JSZip();
+pngs.forEach(function(item){zip.file('page-'+item.page+'.png',item.blob);});
+var content=await zip.generateAsync({type:'blob'});
+var base=file?file.name.replace(/\.pdf$/i,''):'pdf-pages';
+downloadBlob(content,base+'-png.zip');
+}catch(e){showError('ZIP failed: '+(e&&e.message?e.message:e));}
+zipBtn.disabled=false;zipBtn.textContent='⬇ Download All as ZIP';
+});
+
+function downloadBlob(blob,name){
+var a=document.createElement('a');
+var url=URL.createObjectURL(blob);
+a.href=url;a.download=name;document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(url);a.remove();},30000);
+}
+})();
+</script>
+</body>
+</html>
