@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split PDF by Size Online Free | TheEditPDF</title>
+<meta name="description" content="Split a large PDF into smaller files under a size limit you choose — 1MB, 5MB, 10MB or any custom size. Free, no signup, 100% private: files never leave your device.">
+<meta name="keywords" content="split pdf by size, split pdf into smaller files, pdf size splitter, split large pdf, pdf splitter by mb">
+<link rel="canonical" href="https://theeditpdf.com/split-pdf-by-size">
+<meta property="og:title" content="Split PDF by Size Online Free | TheEditPDF">
+<meta property="og:description" content="Split a large PDF into smaller files under your size limit. Free, private, no signup — everything runs in your browser.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Split PDF by Size — TheEditPDF","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Split a large PDF into smaller files under a size limit you choose. Free, no signup, files never leave your device."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I split a PDF by size?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, pick a maximum size per part (for example 5MB), and click Split. The tool groups pages so every output file stays under your limit, then lets you download each part or all parts as one ZIP."}},
+{"@type":"Question","name":"What happens if a single page is bigger than my size limit?","acceptedAnswer":{"@type":"Answer","text":"A single page cannot be split further without recompressing it, so it is kept as its own file and flagged with a warning. Use the Compress PDF tool first if you need that page smaller."}},
+{"@type":"Question","name":"Are the split files smaller than the original?","acceptedAnswer":{"@type":"Answer","text":"Yes. Each part only contains its own pages, so every file is smaller than the original — handy for email attachments with size limits."}},
+{"@type":"Question","name":"Is my PDF uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device."}},
+{"@type":"Question","name":"Can I split by a custom size, not just presets?","acceptedAnswer":{"@type":"Answer","text":"Yes. Enter any size in MB (from 0.1MB up to 100MB) in the custom field, or use the 1MB, 2MB, 5MB, 10MB and 25MB presets."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+:root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--ivory);color:var(--ink);line-height:1.55}
+a{color:var(--gold-d)}
+header.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--gold)}
+.top nav a{margin-left:16px;text-decoration:none;color:var(--ink);font-weight:600}
+.badges{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px}
+.badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:600}
+main{max-width:1080px;margin:0 auto;padding:20px}
+h1{font-family:Georgia,serif;font-size:2.2rem;line-height:1.2;margin:14px 0 6px}
+h2{font-family:Georgia,serif;font-size:1.5rem;margin:32px 0 10px}
+h3{font-size:1.05rem;margin:18px 0 6px}
+.lead{color:#3d463f;font-size:1.08rem;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(166,124,46,.10);margin-top:22px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:#fff}
+.drop:hover,.drop.over{border-color:var(--gold);background:#fffaf0}
+.drop b{font-size:1.1rem}
+.drop p{color:var(--muted);margin:6px 0 0}
+.drop input{display:none}
+.fileinfo{margin-top:14px;font-weight:600}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 6px}
+.preset{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 16px;cursor:pointer;font-weight:600}
+.preset.active{background:var(--gold);color:#fff;border-color:var(--gold)}
+.customrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.customrow input[type=number]{width:110px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:1rem}
+.btn{display:inline-block;background:var(--gold);color:#fff!important;border:0;border-radius:12px;padding:14px 28px;font-size:1.02rem;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(166,124,46,.35);text-decoration:none}
+.btn:hover{background:var(--gold-d)}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#fff;color:var(--ink)!important;border:1px solid var(--line);box-shadow:none}
+.btn.small{padding:9px 16px;font-size:.9rem;border-radius:10px}
+.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.progress{margin-top:16px;font-weight:600;color:#3d463f;min-height:1.5em}
+.progressbar{height:8px;background:#f0e8d6;border-radius:99px;overflow:hidden;margin-top:6px;display:none}
+.progressbar i{display:block;height:100%;background:var(--gold);width:0%}
+.results{margin-top:22px;display:none}
+.results table{width:100%;border-collapse:collapse}
+.results th,.results td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:.95rem}
+.results th{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+.warn{color:#b45309;font-weight:600;font-size:.88rem}
+.note{background:#fff7e0;border:1px solid #f0dfae;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.step b{font-family:Georgia,serif;font-size:1.4rem;color:var(--gold)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.faq summary{font-weight:700;cursor:pointer}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.pillar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.pillar b{font-size:1.05rem}
+footer{max-width:1080px;margin:0 auto;padding:26px 20px 40px;color:var(--muted);font-size:.9rem;text-align:center}
+footer a{color:var(--muted)}
+@media(max-width:640px){h1{font-size:1.7rem}.card{padding:18px}.results table{font-size:.88rem}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="https://theeditpdf.com">The<span>Edit</span>PDF</a>
+  <nav><a href="https://theeditpdf.com/pdf-editor">Edit a PDF — it's free</a><a href="https://theeditpdf.com/split-pdf">Split PDF</a></nav>
+</header>
+<div class="badges">
+  <span class="badge">🔒 100% Private — files never leave your device</span>
+  <span class="badge">🆓 Free Forever — no limits</span>
+  <span class="badge">⚡ No Signup — start instantly</span>
+</div>
+<main>
+  <h1>Split PDF by Size</h1>
+  <p class="lead">Split a large PDF into smaller files, each under a size limit you choose. Perfect for email attachments, upload limits, and sharing big documents in parts — free, with no signup, and your file never leaves your device.</p>
+
+  <section class="card" aria-label="Split PDF by size tool">
+    <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Choose a PDF file">
+      <b>📄 Choose a PDF file</b>
+      <p>or drag &amp; drop it here — processed on your device, nothing is uploaded</p>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf">
+    </div>
+    <div class="fileinfo" id="fileInfo"></div>
+
+    <h3>Maximum size per part</h3>
+    <div class="presets" role="group" aria-label="Size presets">
+      <button type="button" class="preset" data-mb="1">1 MB</button>
+      <button type="button" class="preset" data-mb="2">2 MB</button>
+      <button type="button" class="preset active" data-mb="5">5 MB</button>
+      <button type="button" class="preset" data-mb="10">10 MB</button>
+      <button type="button" class="preset" data-mb="25">25 MB</button>
+    </div>
+    <div class="customrow">
+      <label for="customMB">Custom size (MB):</label>
+      <input type="number" id="customMB" min="0.1" max="100" step="0.1" placeholder="e.g. 3.5">
+      <span style="color:var(--muted);font-size:.9rem">0.1 – 100 MB</span>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="splitBtn" disabled>✂️ Split PDF</button>
+      <button class="btn secondary" id="resetBtn" style="display:none">Start over</button>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div class="progressbar" id="progressbar"><i id="progressFill"></i></div>
+
+    <div class="results" id="results">
+      <h3 id="resultsTitle">Your split files</h3>
+      <table>
+        <thead><tr><th>Part</th><th>Pages</th><th>Size</th><th></th></tr></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+      <div class="actions">
+        <button class="btn" id="zipBtn">📦 Download all as ZIP</button>
+      </div>
+      <div class="note" id="warningsBox" style="display:none"></div>
+    </div>
+    <div class="note">Tip: if a single page alone is bigger than your limit, it is kept as its own file and flagged below. Run it through <a href="https://theeditpdf.com/compress-pdf">Compress PDF</a> first if you need it smaller.</div>
+  </section>
+
+  <h2>How to split a PDF by size</h2>
+  <div class="steps">
+    <div class="step"><b>01</b><p><strong>Choose your PDF</strong> and set the maximum size per part — a preset or any custom MB value.</p></div>
+    <div class="step"><b>02</b><p><strong>Click Split.</strong> Pages are grouped so every output file stays under your limit.</p></div>
+    <div class="step"><b>03</b><p><strong>Download</strong> each part individually, or grab everything at once as a ZIP.</p></div>
+  </div>
+
+  <h2>When is splitting by size useful?</h2>
+  <p>Email providers cap attachments (often 10–25 MB), upload forms reject big files, and messaging apps choke on large documents. Splitting by size guarantees every part fits the limit — no guessing how many pages make 5 MB. It also helps when sharing a long report in instalments or archiving chapters separately. Because each part keeps the original pages' fonts and images, quality is identical to the source.</p>
+
+  <h2>Frequently asked questions</h2>
+  <div class="faq">
+    <details><summary>How do I split a PDF by size?</summary><p>Upload your PDF, pick a maximum size per part (for example 5 MB), and click Split. The tool groups pages so every output file stays under your limit, then lets you download each part or all parts as one ZIP.</p></details>
+    <details><summary>What happens if a single page is bigger than my size limit?</summary><p>A single page cannot be split further without recompressing it, so it is kept as its own file and flagged with a warning. Use the Compress PDF tool first if you need that page smaller.</p></details>
+    <details><summary>Are the split files smaller than the original?</summary><p>Yes. Each file contains just its own pages, so individual files are much smaller than the original — handy for email attachments with size limits.</p></details>
+    <details><summary>Is my PDF uploaded anywhere?</summary><p>No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device.</p></details>
+    <details><summary>Can I split by a custom size, not just presets?</summary><p>Yes. Enter any size in MB (from 0.1 MB up to 100 MB) in the custom field, or use the 1 MB, 2 MB, 5 MB, 10 MB and 25 MB presets.</p></details>
+  </div>
+
+  <h2>Why TheEditPDF?</h2>
+  <div class="pillars">
+    <div class="pillar"><b>🔒 100% Private</b><p>Every tool runs entirely in your browser. Your files never leave your device — ideal for confidential legal, financial and business documents.</p></div>
+    <div class="pillar"><b>🆓 Free &amp; Unlimited</b><p>All tools free forever. No signup, no watermark, no hidden limits. What you see is what you get.</p></div>
+    <div class="pillar"><b>⚡ Nothing to Install</b><p>Works on phone, tablet and computer. Open your browser and start.</p></div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:20px">Files are processed on your device — nothing is uploaded.</p>
+</main>
+<footer>
+  <p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+</footer>
+<script>
+(function(){
+"use strict";
+var fileInput=document.getElementById("fileInput"),
+    dropZone=document.getElementById("dropZone"),
+    fileInfo=document.getElementById("fileInfo"),
+    splitBtn=document.getElementById("splitBtn"),
+    resetBtn=document.getElementById("resetBtn"),
+    zipBtn=document.getElementById("zipBtn"),
+    progress=document.getElementById("progress"),
+    progressbar=document.getElementById("progressbar"),
+    progressFill=document.getElementById("progressFill"),
+    results=document.getElementById("results"),
+    resultsBody=document.getElementById("resultsBody"),
+    resultsTitle=document.getElementById("resultsTitle"),
+    warningsBox=document.getElementById("warningsBox"),
+    customMB=document.getElementById("customMB"),
+    presetBtns=Array.prototype.slice.call(document.querySelectorAll(".preset")),
+    selectedMB=5,
+    srcBytes=null,
+    srcName="document.pdf",
+    parts=[];
+
+function fmt(bytes){
+  if(bytes>=1048576)return (bytes/1048576).toFixed(2)+" MB";
+  if(bytes>=1024)return (bytes/1024).toFixed(1)+" KB";
+  return bytes+" B";
+}
+function baseName(name){
+  return name.replace(/\.pdf$/i,"")||"document";
+}
+function setProgress(msg,pct){
+  progress.textContent=msg||"";
+  if(typeof pct==="number"){
+    progressbar.style.display="block";
+    progressFill.style.width=pct+"%";
+  }else{
+    progressbar.style.display="none";
+    progressFill.style.width="0%";
+  }
+}
+function downloadBlob(blob,name){
+  var url=URL.createObjectURL(blob),
+      a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}a.remove();},30000);
+}
+function clearResults(){
+  parts=[];
+  resultsBody.innerHTML="";
+  results.style.display="none";
+  warningsBox.style.display="none";
+  warningsBox.innerHTML="";
+}
+
+presetBtns.forEach(function(b){
+  b.addEventListener("click",function(){
+    presetBtns.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    selectedMB=parseFloat(b.getAttribute("data-mb"));
+    customMB.value="";
+  });
+});
+customMB.addEventListener("input",function(){
+  var v=parseFloat(customMB.value);
+  if(!isNaN(v)&&v>=0.1&&v<=100){
+    selectedMB=v;
+    presetBtns.forEach(function(x){x.classList.remove("active");});
+  }
+});
+
+dropZone.addEventListener("click",function(){fileInput.click();});
+dropZone.addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}
+});
+["dragover","dragenter"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add("over");});
+});
+["dragleave","drop"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove("over");});
+});
+dropZone.addEventListener("drop",function(e){
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f)handleFile(f);
+});
+fileInput.addEventListener("change",function(){
+  var f=fileInput.files&&fileInput.files[0];
+  if(f)handleFile(f);
+  fileInput.value="";
+});
+
+async function handleFile(file){
+  if(!/\.pdf$/i.test(file.name)&&file.type!=="application/pdf"){
+    setProgress("Please choose a PDF file.");
+    return;
+  }
+  clearResults();
+  resetBtn.style.display="inline-block";
+  setProgress("Reading "+file.name+"…");
+  try{
+    srcBytes=new Uint8Array(await file.arrayBuffer());
+    srcName=file.name;
+    var doc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var pages=doc.getPageCount();
+    fileInfo.textContent="📄 "+file.name+" · "+pages+" page"+(pages===1?"":"s")+" · "+fmt(srcBytes.length);
+    splitBtn.disabled=false;
+    setProgress("Ready — pick a size limit and click Split.");
+  }catch(e){
+    setProgress("Could not open that PDF: "+(e&&e.message?e.message:"unknown error"));
+    splitBtn.disabled=true;
+  }
+}
+
+resetBtn.addEventListener("click",function(){
+  srcBytes=null;srcName="document.pdf";fileInfo.textContent="";
+  splitBtn.disabled=true;resetBtn.style.display="none";
+  clearResults();setProgress("");
+});
+
+/* Measure each page's standalone size so grouping is conservative
+   (combined pages share fonts/images, so the real part is usually smaller). */
+async function measurePageSizes(srcDoc,total){
+  var sizes=[];
+  for(var i=0;i<total;i++){
+    var single=await window.PDFLib.PDFDocument.create();
+    var copied=await single.copyPages(srcDoc,[i]);
+    single.addPage(copied[0]);
+    var bytes=await single.save();
+    sizes.push(bytes.length);
+    if(i%10===9||i===total-1){
+      setProgress("Measuring pages… "+(i+1)+" of "+total,Math.round(((i+1)/total)*30));
+    }
+  }
+  return sizes;
+}
+
+function groupPages(sizes,maxBytes){
+  var groups=[],cur=[],curSize=0;
+  for(var i=0;i<sizes.length;i++){
+    if(cur.length>0&&curSize+sizes[i]>maxBytes){
+      groups.push(cur);cur=[];curSize=0;
+    }
+    cur.push(i);curSize+=sizes[i];
+  }
+  if(cur.length)groups.push(cur);
+  return groups;
+}
+
+async function buildPart(srcDoc,pageIdxs){
+  var out=await window.PDFLib.PDFDocument.create();
+  var copied=await out.copyPages(srcDoc,pageIdxs);
+  copied.forEach(function(p){out.addPage(p);});
+  var bytes=await out.save();
+  return bytes;
+}
+
+/* Build a group; if the real saved size exceeds the limit and the group
+   has more than one page, split it in half and rebuild each half. */
+async function buildGroupVerified(srcDoc,pageIdxs,maxBytes,depth){
+  var bytes=await buildPart(srcDoc,pageIdxs);
+  if(bytes.length<=maxBytes||pageIdxs.length<=1||depth>8){
+    return [{pages:pageIdxs,bytes:bytes}];
+  }
+  var mid=Math.floor(pageIdxs.length/2);
+  var left=await buildGroupVerified(srcDoc,pageIdxs.slice(0,mid),maxBytes,depth+1);
+  var right=await buildGroupVerified(srcDoc,pageIdxs.slice(mid),maxBytes,depth+1);
+  return left.concat(right);
+}
+
+splitBtn.addEventListener("click",async function(){
+  if(!srcBytes)return;
+  var maxBytes=Math.round(selectedMB*1048576);
+  if(!(maxBytes>0)){setProgress("Please enter a valid size limit.");return;}
+  splitBtn.disabled=true;
+  clearResults();
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    setProgress("Loading document…",5);
+    var srcDoc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var total=srcDoc.getPageCount();
+    var sizes=await measurePageSizes(srcDoc,total);
+    setProgress("Grouping pages under "+fmt(maxBytes)+"…",35);
+    var groups=groupPages(sizes,maxBytes);
+    var built=[],warnings=[];
+    for(var g=0;g<groups.length;g++){
+      var sub=await buildGroupVerified(srcDoc,groups[g],maxBytes,0);
+      sub.forEach(function(s){
+        if(s.pages.length===1&&s.bytes.length>maxBytes){
+          warnings.push("Page "+(s.pages[0]+1)+" alone is "+fmt(s.bytes.length)+" — over your "+fmt(maxBytes)+" limit, kept as-is. Compress it first if you need it smaller.");
+        }
+        built.push(s);
+      });
+      setProgress("Building part "+(g+1)+" of "+groups.length+"…",35+Math.round(((g+1)/groups.length)*55));
+    }
+    var base=baseName(srcName);
+    parts=built.map(function(p,idx){
+      var name=base+"-part"+(idx+1)+".pdf";
+      return {name:name,pages:p.pages,bytes:p.bytes,
+              blob:new Blob([p.bytes],{type:"application/pdf"})};
+    });
+    renderResults(warnings);
+    setProgress("Done — "+parts.length+" file"+(parts.length===1?"":"s")+" created from "+total+" page"+(total===1?"":"s")+".",100);
+  }catch(e){
+    setProgress("Split failed: "+(e&&e.message?e.message:e));
+  }finally{
+    splitBtn.disabled=false;
+  }
+});
+
+function renderResults(warnings){
+  resultsBody.innerHTML="";
+  parts.forEach(function(p,idx){
+    var tr=document.createElement("tr");
+    var first=p.pages[0]+1,last=p.pages[p.pages.length-1]+1;
+    var range=first===last?("Page "+first):("Pages "+first+"–"+last);
+    var over=p.bytes.length>Math.round(selectedMB*1048576);
+    var td1=document.createElement("td");td1.textContent="Part "+(idx+1);
+    var td2=document.createElement("td");td2.textContent=range;
+    var td3=document.createElement("td");
+    td3.textContent=fmt(p.bytes.length);
+    if(over){var w=document.createElement("span");w.className="warn";w.textContent=" ⚠ over limit";td3.appendChild(w);}
+    var td4=document.createElement("td");
+    var btn=document.createElement("button");
+    btn.className="btn secondary small";btn.textContent="⬇ Download";
+    (function(part){btn.addEventListener("click",function(){downloadBlob(part.blob,part.name);});})(p);
+    td4.appendChild(btn);
+    tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);
+    resultsBody.appendChild(tr);
+  });
+  resultsTitle.textContent="Your split files — "+parts.length+" part"+(parts.length===1?"":"s");
+  if(warnings.length){
+    warningsBox.innerHTML="<b>Note:</b><br>"+warnings.map(function(w){return "• "+w;}).join("<br>");
+    warningsBox.style.display="block";
+  }
+  results.style.display="block";
+}
+
+zipBtn.addEventListener("click",async function(){
+  if(!parts.length)return;
+  if(!window.JSZip){setProgress("ZIP engine could not load. Download parts individually.");return;}
+  zipBtn.disabled=true;
+  try{
+    setProgress("Building ZIP…");
+    var zip=new window.JSZip();
+    parts.forEach(function(p){zip.file(p.name,p.blob);});
+    var blob=await zip.generateAsync({type:"blob"});
+    downloadBlob(blob,baseName(srcName)+"-split.zip");
+    setProgress("ZIP downloaded — "+parts.length+" files.");
+  }catch(e){
+    setProgress("ZIP failed: "+(e&&e.message?e.message:e));
+  }finally{
+    zipBtn.disabled=false;
+  }
+});
+})();
+</script>
+</body>
+</html>
