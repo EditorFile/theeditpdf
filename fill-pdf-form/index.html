@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fill PDF Form Online Free | TheEditPDF</title>
+<meta name="description" content="Fill a fillable PDF form online — upload your PDF, real AcroForm fields (text, checkboxes, dropdowns, radio buttons) are detected automatically, fill them in and download the completed form. Free, no signup, 100% private: files never leave your device.">
+<meta name="keywords" content="fill pdf form, fill pdf form online free, fillable pdf form filler, fill out pdf form, pdf form filler online">
+<link rel="canonical" href="https://theeditpdf.com/fill-pdf-form">
+<meta property="og:title" content="Fill PDF Form Online Free | TheEditPDF">
+<meta property="og:description" content="Upload a fillable PDF and its real form fields are detected automatically. Fill them in, download the completed form — free, private, no signup, everything runs in your browser.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Fill PDF Form — TheEditPDF","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Fill a fillable PDF form online. Real AcroForm fields (text, checkboxes, dropdowns, radio buttons) are detected automatically, filled in, and saved back into the PDF. Free, no signup, files never leave your device."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I fill a PDF form online?","acceptedAnswer":{"@type":"Answer","text":"Upload your fillable PDF and the tool detects its form fields automatically. Fill in the text boxes, tick the checkboxes, pick from the dropdowns and radio buttons, then click Fill & Download. You get a completed PDF with your answers saved inside it."}},
+{"@type":"Question","name":"What is a fillable PDF form?","acceptedAnswer":{"@type":"Answer","text":"A fillable PDF (also called an AcroForm) has real interactive fields built into the file — you can click into a box and type, instead of just seeing printed text. This tool reads those real fields, so your answers are stored as proper form data, not as a text overlay."}},
+{"@type":"Question","name":"What if my PDF has no form fields?","acceptedAnswer":{"@type":"Answer","text":"If the PDF is a flat scan or a regular document with no built-in fields, the tool tells you so instead of failing silently. In that case you can still add text with the free PDF Editor, or ask the form provider for a fillable version of the file."}},
+{"@type":"Question","name":"Are my filled answers saved in the downloaded PDF?","acceptedAnswer":{"@type":"Answer","text":"Yes. Your answers are written into the PDF's form fields and their appearances are updated, so the completed form opens correctly in Adobe Acrobat, Chrome, Edge, and any other PDF reader."}},
+{"@type":"Question","name":"Is my PDF uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--ivory);color:var(--ink);line-height:1.55}
+a{color:var(--gold-d)}
+header.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--gold)}
+.top nav a{margin-left:16px;text-decoration:none;color:var(--ink);font-weight:600}
+.badges{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px}
+.badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:600}
+main{max-width:1080px;margin:0 auto;padding:20px}
+h1{font-family:Georgia,serif;font-size:2.2rem;line-height:1.2;margin:14px 0 6px}
+h2{font-family:Georgia,serif;font-size:1.5rem;margin:32px 0 10px}
+h3{font-size:1.05rem;margin:18px 0 6px}
+.lead{color:#3d463f;font-size:1.08rem;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(166,124,46,.10);margin-top:22px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:#fff}
+.drop:hover,.drop.over{border-color:var(--gold);background:#fffaf0}
+.drop b{font-size:1.1rem}
+.drop p{color:var(--muted);margin:6px 0 0}
+.drop input{display:none}
+.fileinfo{margin-top:14px;font-weight:600}
+.fieldlabel{display:block;font-weight:700;margin:0 0 6px}
+.fieldlabel .req{color:#b3261e}
+.fieldlabel .orig{font-weight:400;color:var(--muted);font-size:.85rem}
+.fieldrow{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:12px 0}
+.fieldrow .kind{font-size:.8rem;font-weight:700;color:var(--gold-d);text-transform:uppercase;letter-spacing:.04em}
+.textinput,.textareainput,.selectinput{width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:#fff;margin-top:6px}
+.textinput:focus,.textareainput:focus,.selectinput:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+.textinput:disabled,.textareainput:disabled,.selectinput:disabled{background:#f5f1e6;color:var(--muted)}
+.textareainput{resize:vertical;min-height:76px}
+.checklabel{display:flex;gap:10px;align-items:flex-start;cursor:pointer;margin-top:6px;font-weight:600}
+.checklabel input{width:19px;height:19px;margin-top:2px;accent-color:var(--gold)}
+.radiogroup{margin-top:6px;display:flex;flex-direction:column;gap:6px}
+.radiolabel{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.radiolabel input{margin-top:4px;accent-color:var(--gold)}
+.readonlynote{color:var(--muted);font-size:.88rem;margin-top:6px}
+.btn{display:inline-block;background:var(--gold);color:#fff!important;border:0;border-radius:12px;padding:14px 28px;font-size:1.02rem;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(166,124,46,.35);text-decoration:none}
+.btn:hover{background:var(--gold-d)}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#fff;color:var(--ink)!important;border:1px solid var(--line);box-shadow:none}
+.btn.small{padding:9px 16px;font-size:.9rem;border-radius:10px}
+.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.progress{margin-top:16px;font-weight:600;color:#3d463f;min-height:1.5em}
+.progressbar{height:8px;background:#f0e8d6;border-radius:99px;overflow:hidden;margin-top:6px;display:none}
+.progressbar i{display:block;height:100%;background:var(--gold);width:0%}
+.results{margin-top:22px;display:none}
+.note{background:#fff7e0;border:1px solid #f0dfae;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem}
+.err{background:#fdf0f0;border:1px solid #f0c0c0;color:#9b1c1c;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem;display:none}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.step b{font-family:Georgia,serif;font-size:1.4rem;color:var(--gold)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.faq summary{font-weight:700;cursor:pointer}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.pillar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.pillar b{font-size:1.05rem}
+footer{max-width:1080px;margin:0 auto;padding:26px 20px 40px;color:var(--muted);font-size:.9rem;text-align:center}
+footer a{color:var(--muted)}
+@media(max-width:640px){h1{font-size:1.7rem}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="https://theeditpdf.com">The<span>Edit</span>PDF</a>
+  <nav><a href="https://theeditpdf.com/pdf-editor">Edit a PDF — it's free</a><a href="https://theeditpdf.com/sign-pdf">Sign PDF</a></nav>
+</header>
+<div class="badges">
+  <span class="badge">🔒 100% Private — files never leave your device</span>
+  <span class="badge">🆓 Free Forever — no limits</span>
+  <span class="badge">⚡ No Signup — start instantly</span>
+</div>
+<main>
+  <h1>Fill PDF Form</h1>
+  <p class="lead">Fill a fillable PDF form online. Upload your PDF and its real form fields — text boxes, checkboxes, dropdowns, radio buttons — are detected automatically. Fill them in and download the completed form. Free, with no signup, and your file never leaves your device.</p>
+
+  <section class="card" aria-label="Fill PDF form tool">
+    <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Choose a PDF file">
+      <b>📄 Choose a PDF form</b>
+      <p>or drag &amp; drop it here — processed on your device, nothing is uploaded</p>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf">
+    </div>
+    <div class="fileinfo" id="fileInfo"></div>
+
+    <div id="fieldsArea" style="display:none">
+      <p id="fieldSummary" style="font-weight:700;margin:20px 0 4px"></p>
+      <p class="hint" style="color:var(--muted);font-size:.9rem;margin:0">Fields below come straight from the PDF itself — your answers are saved back into the form, not drawn on top of it.</p>
+      <div id="formFields"></div>
+      <div class="actions">
+        <button class="btn" id="fillBtn">✅ Fill &amp; Download</button>
+        <button class="btn secondary" id="clearBtn">Clear answers</button>
+        <button class="btn secondary" id="resetBtn">Start over</button>
+      </div>
+    </div>
+
+    <div id="noFieldsArea" style="display:none">
+      <div class="note" id="noFieldsText"></div>
+      <div class="actions">
+        <button class="btn secondary" id="resetBtn2">Choose another PDF</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress"></div>
+    <div class="progressbar" id="progressbar"><i id="progressFill"></i></div>
+    <div class="err" id="errorBox" role="alert"></div>
+
+    <div class="results" id="results">
+      <h3 id="resultsTitle">Your filled form is ready</h3>
+      <p id="resultsInfo"></p>
+      <div class="actions">
+        <button class="btn" id="downloadBtn">⬇ Download filled PDF</button>
+        <button class="btn secondary" id="againBtn">Adjust answers</button>
+      </div>
+    </div>
+    <div class="note">Tip: need a signature on the form too? Use <a href="https://theeditpdf.com/sign-pdf">Sign PDF</a>. Need to add text to a PDF that has no form fields? Use the <a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>.</div>
+  </section>
+
+  <h2>How to fill a PDF form</h2>
+  <div class="steps">
+    <div class="step"><b>01</b><p><strong>Choose your PDF.</strong> The tool scans it and lists every form field it contains.</p></div>
+    <div class="step"><b>02</b><p><strong>Fill in the fields.</strong> Type into text boxes, tick checkboxes, pick from dropdowns and radio buttons.</p></div>
+    <div class="step"><b>03</b><p><strong>Click Fill &amp; Download.</strong> You get a completed PDF with your answers saved inside the form.</p></div>
+  </div>
+
+  <h2>When is filling a PDF form useful?</h2>
+  <p>Fillable forms are everywhere: job applications, tax and government forms, school admissions, rental agreements, medical intake forms, and business contracts. Instead of printing, handwriting and scanning, you fill the form on screen and send back a clean, typed, professional-looking PDF. Because this tool writes into the PDF's real form fields, your answers stay editable and searchable in any PDF reader — unlike a screenshot or a text overlay pasted on top of the page.</p>
+
+  <h2>Frequently asked questions</h2>
+  <div class="faq">
+    <details><summary>How do I fill a PDF form online?</summary><p>Upload your fillable PDF and the tool detects its form fields automatically. Fill in the text boxes, tick the checkboxes, pick from the dropdowns and radio buttons, then click Fill &amp; Download. You get a completed PDF with your answers saved inside it.</p></details>
+    <details><summary>What is a fillable PDF form?</summary><p>A fillable PDF (also called an AcroForm) has real interactive fields built into the file — you can click into a box and type, instead of just seeing printed text. This tool reads those real fields, so your answers are stored as proper form data, not as a text overlay.</p></details>
+    <details><summary>What if my PDF has no form fields?</summary><p>If the PDF is a flat scan or a regular document with no built-in fields, the tool tells you so instead of failing silently. In that case you can still add text with the free PDF Editor, or ask the form provider for a fillable version of the file.</p></details>
+    <details><summary>Are my filled answers saved in the downloaded PDF?</summary><p>Yes. Your answers are written into the PDF's form fields and their appearances are updated, so the completed form opens correctly in Adobe Acrobat, Chrome, Edge, and any other PDF reader.</p></details>
+    <details><summary>Is my PDF uploaded anywhere?</summary><p>No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device.</p></details>
+  </div>
+
+  <h2>Why TheEditPDF?</h2>
+  <div class="pillars">
+    <div class="pillar"><b>🔒 100% Private</b><p>Every tool runs entirely in your browser. Your files never leave your device — ideal for confidential legal, financial and business documents.</p></div>
+    <div class="pillar"><b>🆓 Free &amp; Unlimited</b><p>All tools free forever. No signup, no watermark, no hidden limits. What you see is what you get.</p></div>
+    <div class="pillar"><b>⚡ Nothing to Install</b><p>Works on phone, tablet and computer. Open your browser and start.</p></div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:20px">Files are processed on your device — nothing is uploaded.</p>
+</main>
+<footer>
+  <p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+</footer>
+<script>
+(function(){
+"use strict";
+var fileInput=document.getElementById("fileInput"),
+    dropZone=document.getElementById("dropZone"),
+    fileInfo=document.getElementById("fileInfo"),
+    fieldsArea=document.getElementById("fieldsArea"),
+    fieldSummary=document.getElementById("fieldSummary"),
+    formFieldsBox=document.getElementById("formFields"),
+    noFieldsArea=document.getElementById("noFieldsArea"),
+    noFieldsText=document.getElementById("noFieldsText"),
+    fillBtn=document.getElementById("fillBtn"),
+    clearBtn=document.getElementById("clearBtn"),
+    resetBtn=document.getElementById("resetBtn"),
+    resetBtn2=document.getElementById("resetBtn2"),
+    progress=document.getElementById("progress"),
+    progressbar=document.getElementById("progressbar"),
+    progressFill=document.getElementById("progressFill"),
+    errorBox=document.getElementById("errorBox"),
+    results=document.getElementById("results"),
+    resultsTitle=document.getElementById("resultsTitle"),
+    resultsInfo=document.getElementById("resultsInfo"),
+    downloadBtn=document.getElementById("downloadBtn"),
+    againBtn=document.getElementById("againBtn"),
+    srcBytes=null,
+    srcName="document.pdf",
+    fieldsMeta=[],
+    outBlob=null,
+    outName="filled.pdf",
+    MAX_BYTES=50*1024*1024;
+
+function fmt(bytes){
+  if(bytes>=1048576)return (bytes/1048576).toFixed(2)+" MB";
+  if(bytes>=1024)return (bytes/1024).toFixed(1)+" KB";
+  return bytes+" B";
+}
+function baseName(name){
+  return name.replace(/\.pdf$/i,"")||"document";
+}
+function setProgress(msg,pct){
+  progress.textContent=msg||"";
+  if(typeof pct==="number"){
+    progressbar.style.display="block";
+    progressFill.style.width=pct+"%";
+  }else{
+    progressbar.style.display="none";
+    progressFill.style.width="0%";
+  }
+}
+function showError(msg){
+  errorBox.textContent=msg;
+  errorBox.style.display=msg?"block":"none";
+}
+function downloadBlob(blob,name){
+  var url=URL.createObjectURL(blob),
+      a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}a.remove();},30000);
+}
+function friendlyName(name){
+  var s=String(name||"").replace(/[_\.\-]+/g," ").replace(/\s+/g," ").trim();
+  if(!s)s="Untitled field";
+  return s.charAt(0).toUpperCase()+s.slice(1);
+}
+function kindLabel(kind){
+  if(kind==="text")return "Text field";
+  if(kind==="checkbox")return "Checkbox";
+  if(kind==="dropdown")return "Dropdown";
+  if(kind==="radio")return "Radio buttons";
+  return "Field";
+}
+
+/* Identify a pdf-lib field's kind. instanceof is the reliable check;
+   constructor.name is a fallback for minified builds. */
+function fieldKind(f){
+  var L=window.PDFLib;
+  try{
+    if(L){
+      if(f instanceof L.PDFTextField)return "text";
+      if(f instanceof L.PDFCheckBox)return "checkbox";
+      if(f instanceof L.PDFDropdown)return "dropdown";
+      if(f instanceof L.PDFRadioGroup)return "radio";
+      if(f instanceof L.PDFButton)return "button";
+    }
+  }catch(e){}
+  var c=(f&&f.constructor&&f.constructor.name)||"";
+  if(c==="PDFTextField")return "text";
+  if(c==="PDFCheckBox")return "checkbox";
+  if(c==="PDFDropdown")return "dropdown";
+  if(c==="PDFRadioGroup")return "radio";
+  if(c==="PDFButton")return "button";
+  return "unknown";
+}
+
+/* Read one field's metadata without ever throwing on odd PDFs. */
+function describeField(f){
+  var kind=fieldKind(f),
+      meta={name:"",kind:kind,readOnly:false,required:false};
+  try{meta.name=f.getName()||"";}catch(e){}
+  try{meta.readOnly=!!f.isReadOnly();}catch(e){}
+  try{meta.required=!!f.isRequired();}catch(e){}
+  if(kind==="text"){
+    try{meta.multiline=!!f.isMultiline();}catch(e){meta.multiline=false;}
+    try{
+      var ml=f.getMaxLength();
+      if(typeof ml==="number"&&ml>0)meta.maxLength=ml;
+    }catch(e){}
+    try{meta.value=f.getText()||"";}catch(e){meta.value="";}
+  }else if(kind==="checkbox"){
+    try{meta.checked=!!f.isChecked();}catch(e){meta.checked=false;}
+  }else if(kind==="dropdown"||kind==="radio"){
+    try{meta.options=f.getOptions()||[];}catch(e){meta.options=[];}
+    try{
+      var sel=f.getSelected();
+      if(Array.isArray(sel))meta.value=sel.length?sel[0]:"";
+      else meta.value=sel||"";
+    }catch(e){meta.value="";}
+  }
+  return meta;
+}
+
+function buildFieldRow(meta,idx){
+  var row=document.createElement("div");
+  row.className="fieldrow";
+
+  var kind=document.createElement("div");
+  kind.className="kind";
+  kind.textContent=kindLabel(meta.kind);
+  row.appendChild(kind);
+
+  var label=document.createElement("label");
+  label.className="fieldlabel";
+  label.textContent=friendlyName(meta.name);
+  if(meta.required){
+    var req=document.createElement("span");
+    req.className="req";
+    req.textContent=" *";
+    label.appendChild(req);
+  }
+  var orig=document.createElement("span");
+  orig.className="orig";
+  orig.textContent="  ("+meta.name+")";
+  label.appendChild(orig);
+  row.appendChild(label);
+
+  var disabled=meta.readOnly;
+
+  if(meta.kind==="text"){
+    var input;
+    if(meta.multiline){
+      input=document.createElement("textarea");
+      input.className="textareainput";
+      input.rows=3;
+      input.value=meta.value||"";
+    }else{
+      input=document.createElement("input");
+      input.type="text";
+      input.className="textinput";
+      input.value=meta.value||"";
+    }
+    if(meta.maxLength)input.maxLength=meta.maxLength;
+    if(meta.required)input.required=true;
+    input.disabled=disabled;
+    input.setAttribute("aria-label",friendlyName(meta.name));
+    meta.el=input;
+    row.appendChild(input);
+  }else if(meta.kind==="checkbox"){
+    var clabel=document.createElement("label");
+    clabel.className="checklabel";
+    var cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.checked=!!meta.checked;
+    cb.disabled=disabled;
+    cb.setAttribute("aria-label",friendlyName(meta.name));
+    var ctext=document.createElement("span");
+    ctext.textContent=meta.checked?"Currently ticked — untick to clear":"Tick to select";
+    clabel.appendChild(cb);
+    clabel.appendChild(ctext);
+    meta.el=cb;
+    row.appendChild(clabel);
+  }else if(meta.kind==="dropdown"){
+    if(meta.options&&meta.options.length){
+      var sel=document.createElement("select");
+      sel.className="selectinput";
+      sel.disabled=disabled;
+      sel.setAttribute("aria-label",friendlyName(meta.name));
+      var blank=document.createElement("option");
+      blank.value="";
+      blank.textContent="— Select —";
+      sel.appendChild(blank);
+      meta.options.forEach(function(opt){
+        var o=document.createElement("option");
+        o.value=opt;
+        o.textContent=opt;
+        if(opt===meta.value)o.selected=true;
+        sel.appendChild(o);
+      });
+      if(meta.value&&meta.options.indexOf(meta.value)===-1){
+        var extra=document.createElement("option");
+        extra.value=meta.value;
+        extra.textContent=meta.value+" (current value)";
+        extra.selected=true;
+        sel.appendChild(extra);
+      }
+      meta.el=sel;
+      row.appendChild(sel);
+    }else{
+      var note=document.createElement("p");
+      note.className="readonlynote";
+      note.textContent="This dropdown has no readable options, so it cannot be filled here.";
+      row.appendChild(note);
+      meta.el=null;
+    }
+  }else if(meta.kind==="radio"){
+    if(meta.options&&meta.options.length){
+      var group=document.createElement("div");
+      group.className="radiogroup";
+      group.setAttribute("role","radiogroup");
+      group.setAttribute("aria-label",friendlyName(meta.name));
+      meta.options.forEach(function(opt){
+        var rlabel=document.createElement("label");
+        rlabel.className="radiolabel";
+        var r=document.createElement("input");
+        r.type="radio";
+        r.name="fld_"+idx;
+        r.value=opt;
+        r.checked=(opt===meta.value);
+        r.disabled=disabled;
+        var rtext=document.createElement("span");
+        rtext.textContent=opt;
+        rlabel.appendChild(r);
+        rlabel.appendChild(rtext);
+        group.appendChild(rlabel);
+      });
+      meta.el=group;
+      row.appendChild(group);
+    }else{
+      var rnote=document.createElement("p");
+      rnote.className="readonlynote";
+      rnote.textContent="This radio group has no readable options, so it cannot be filled here.";
+      row.appendChild(rnote);
+      meta.el=null;
+    }
+  }
+
+  if(disabled){
+    var ronly=document.createElement("p");
+    ronly.className="readonlynote";
+    ronly.textContent="This field is read-only in the PDF and cannot be changed.";
+    row.appendChild(ronly);
+  }
+  return row;
+}
+
+function renderFields(){
+  formFieldsBox.innerHTML="";
+  fieldsMeta.forEach(function(meta,idx){
+    formFieldsBox.appendChild(buildFieldRow(meta,idx));
+  });
+  var counts={text:0,checkbox:0,dropdown:0,radio:0};
+  fieldsMeta.forEach(function(m){if(counts[m.kind]!==undefined)counts[m.kind]++;});
+  var parts=[];
+  if(counts.text)parts.push(counts.text+" text field"+(counts.text===1?"":"s"));
+  if(counts.checkbox)parts.push(counts.checkbox+" checkbox"+(counts.checkbox===1?"":"es"));
+  if(counts.dropdown)parts.push(counts.dropdown+" dropdown"+(counts.dropdown===1?"":"s"));
+  if(counts.radio)parts.push(counts.radio+" radio group"+(counts.radio===1?"":"s"));
+  fieldSummary.textContent="✅ Found "+fieldsMeta.length+" fillable field"+(fieldsMeta.length===1?"":"s")+" ("+parts.join(", ")+"). Fill them in below.";
+  var anyEditable=fieldsMeta.some(function(m){return !m.readOnly&&m.el;});
+  fillBtn.disabled=!anyEditable;
+  if(!anyEditable){
+    fieldSummary.textContent+=" All detected fields are read-only, so nothing can be changed in this file.";
+  }
+}
+
+function resetAll(){
+  srcBytes=null;srcName="document.pdf";fieldsMeta=[];outBlob=null;
+  fileInfo.textContent="";
+  formFieldsBox.innerHTML="";
+  fieldsArea.style.display="none";
+  noFieldsArea.style.display="none";
+  results.style.display="none";
+  showError("");
+  setProgress("");
+  fillBtn.disabled=false;
+}
+
+dropZone.addEventListener("click",function(){fileInput.click();});
+dropZone.addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}
+});
+["dragover","dragenter"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add("over");});
+});
+["dragleave","drop"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove("over");});
+});
+dropZone.addEventListener("drop",function(e){
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f)handleFile(f);
+});
+fileInput.addEventListener("change",function(){
+  var f=fileInput.files&&fileInput.files[0];
+  if(f)handleFile(f);
+  fileInput.value="";
+});
+
+async function handleFile(file){
+  if(!/\.pdf$/i.test(file.name)&&file.type!=="application/pdf"){
+    setProgress("Please choose a PDF file.");
+    return;
+  }
+  if(file.size>MAX_BYTES){
+    setProgress("That file is over the 50 MB limit. Please use a smaller PDF.");
+    return;
+  }
+  resetAll();
+  showError("");
+  setProgress("Reading "+file.name+"…");
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    srcBytes=new Uint8Array(await file.arrayBuffer());
+    srcName=file.name;
+    setProgress("Detecting form fields…",40);
+    var doc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var form=doc.getForm();
+    var rawFields=form.getFields()||[];
+    var pageCount=doc.getPageCount();
+    fileInfo.textContent="📄 "+file.name+" · "+pageCount+" page"+(pageCount===1?"":"s")+" · "+fmt(srcBytes.length);
+    var all=rawFields.map(describeField);
+    var buttons=all.filter(function(m){return m.kind==="button";}).length;
+    var unknown=all.filter(function(m){return m.kind==="unknown";}).length;
+    fieldsMeta=all.filter(function(m){
+      return m.kind==="text"||m.kind==="checkbox"||m.kind==="dropdown"||m.kind==="radio";
+    });
+    if(!fieldsMeta.length){
+      var reason="This PDF contains no fillable form fields.";
+      if(buttons||unknown){
+        reason+=" It does contain "+(buttons?buttons+" button"+(buttons===1?"":"s"):"")+
+          ((buttons&&unknown)?" and ":"")+
+          (unknown?unknown+" field"+(unknown===1?"":"s")+" of an unsupported type":"")+
+          ", but none that can be filled in.";
+      }
+      reason+=" A fillable form (AcroForm) has real interactive fields built in — a flat scan or a regular document does not. "+
+        "You can still add text with the free PDF Editor, or ask the form provider for a fillable version of this file.";
+      noFieldsText.textContent="⚠️ "+reason;
+      noFieldsArea.style.display="block";
+      setProgress("No fillable fields found in this PDF.");
+      return;
+    }
+    fieldsArea.style.display="block";
+    renderFields();
+    setProgress("Ready — fill in the fields, then click Fill & Download.");
+  }catch(e){
+    setProgress("Could not open that PDF: "+(e&&e.message?e.message:e));
+  }
+}
+
+resetBtn.addEventListener("click",resetAll);
+resetBtn2.addEventListener("click",resetAll);
+
+clearBtn.addEventListener("click",function(){
+  fieldsMeta.forEach(function(meta){
+    if(!meta.el||meta.readOnly)return;
+    if(meta.kind==="text")meta.el.value="";
+    else if(meta.kind==="checkbox")meta.el.checked=false;
+    else if(meta.kind==="dropdown")meta.el.selectedIndex=0;
+    else if(meta.kind==="radio"){
+      var radios=meta.el.querySelectorAll("input[type=radio]");
+      radios.forEach(function(r){r.checked=false;});
+    }
+  });
+  results.style.display="none";
+  outBlob=null;
+  setProgress("Answers cleared — fill in the fields again.");
+});
+
+/* Read the user's current answer for one field. Returns null when the
+   field has no answer (e.g. dropdown left on "— Select —"). */
+function readAnswer(meta){
+  if(!meta.el||meta.readOnly)return null;
+  if(meta.kind==="text")return meta.el.value;
+  if(meta.kind==="checkbox")return meta.el.checked;
+  if(meta.kind==="dropdown"){
+    var v=meta.el.value;
+    return v===""?null:v;
+  }
+  if(meta.kind==="radio"){
+    var checked=meta.el.querySelector("input[type=radio]:checked");
+    return checked?checked.value:null;
+  }
+  return null;
+}
+
+fillBtn.addEventListener("click",async function(){
+  if(!srcBytes||!fieldsMeta.length)return;
+  fillBtn.disabled=true;
+  showError("");
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    setProgress("Loading document…",10);
+    var srcDoc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var form=srcDoc.getForm();
+    var byName={};
+    form.getFields().forEach(function(f){
+      try{byName[f.getName()]=f;}catch(e){}
+    });
+    setProgress("Writing your answers into the form…",40);
+    var applied=0,skipped=[];
+    fieldsMeta.forEach(function(meta){
+      var f=byName[meta.name];
+      if(!f||meta.readOnly||!meta.el)return;
+      var ans=readAnswer(meta);
+      if(ans===null)return; /* left blank on purpose — keep original value */
+      try{
+        if(meta.kind==="text"){
+          f.setText(String(ans));
+        }else if(meta.kind==="checkbox"){
+          if(ans)f.check();else f.uncheck();
+        }else if(meta.kind==="dropdown"){
+          if(meta.options&&meta.options.indexOf(ans)!==-1)f.select(ans);
+          else throw new Error("option not in list");
+        }else if(meta.kind==="radio"){
+          if(meta.options&&meta.options.indexOf(ans)!==-1)f.select(ans);
+          else throw new Error("option not in list");
+        }
+        applied++;
+      }catch(e){
+        skipped.push(meta.name);
+      }
+    });
+    /* Make filled values visible in every reader: update appearances
+       with an embedded standard font. Failure here is non-fatal —
+       most readers still render the values from the field data. */
+    try{
+      var helvetica=await srcDoc.embedFont(window.PDFLib.StandardFonts.Helvetica);
+      form.updateFieldAppearances(helvetica);
+    }catch(e){}
+    setProgress("Saving filled PDF…",80);
+    var bytes=await srcDoc.save();
+    outBlob=new Blob([bytes],{type:"application/pdf"});
+    outName=baseName(srcName)+"-filled.pdf";
+    resultsTitle.textContent="Your filled form is ready";
+    var info=applied+" field"+(applied===1?"":"s")+" filled · "+fmt(bytes.length)+" · file: "+outName;
+    if(skipped.length)info+=" · "+skipped.length+" field"+(skipped.length===1?"":"s")+" could not be written ("+skipped.slice(0,3).join(", ")+(skipped.length>3?", …":"")+").";
+    resultsInfo.textContent=info;
+    results.style.display="block";
+    setProgress("Done — your filled form is ready to download.",100);
+  }catch(e){
+    setProgress("Filling failed: "+(e&&e.message?e.message:e));
+  }finally{
+    fillBtn.disabled=false;
+  }
+});
+
+downloadBtn.addEventListener("click",function(){
+  if(outBlob)downloadBlob(outBlob,outName);
+});
+againBtn.addEventListener("click",function(){
+  results.style.display="none";
+  outBlob=null;
+  setProgress("Adjust your answers and click Fill & Download again.");
+  document.getElementById("formFields").scrollIntoView({behavior:"smooth",block:"start"});
+});
+})();
+</script>
+</body>
+</html>
