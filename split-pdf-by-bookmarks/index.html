@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split PDF by Bookmarks Online Free | TheEditPDF</title>
+<meta name="description" content="Split a PDF at its bookmarks (table of contents) — one file per chapter or section, named after each bookmark. Free, no signup, 100% private: files never leave your device.">
+<meta name="keywords" content="split pdf by bookmarks, split pdf by chapters, pdf bookmark splitter, split pdf by outline, split pdf by table of contents">
+<link rel="canonical" href="https://theeditpdf.com/split-pdf-by-bookmarks">
+<meta property="og:title" content="Split PDF by Bookmarks Online Free | TheEditPDF">
+<meta property="og:description" content="Split a PDF at its bookmarks — one file per chapter, named after each bookmark. Free, private, no signup — everything runs in your browser.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Split PDF by Bookmarks — TheEditPDF","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Split a PDF at its bookmarks (table of contents) into separate files, one per chapter or section. Free, no signup, files never leave your device."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I split a PDF by bookmarks?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF and the tool reads its bookmarks (table of contents). Choose which bookmark level to split at — for example top-level chapters only — then click Split. Each bookmark becomes its own PDF file, named after the bookmark, and you can download them individually or all at once as a ZIP."}},
+{"@type":"Question","name":"What if my PDF has no bookmarks?","acceptedAnswer":{"@type":"Answer","text":"Then there is nothing to split by. The tool tells you so clearly instead of failing silently. Use Split PDF by Size or Extract Pages instead, or add bookmarks to the PDF first (for example in a desktop PDF editor) and try again."}},
+{"@type":"Question","name":"What happens to pages before the first bookmark?","acceptedAnswer":{"@type":"Answer","text":"Pages before the first split bookmark (for example a cover or preface) are kept together as their own first file, so no pages are ever lost."}},
+{"@type":"Question","name":"Are the output files named after the bookmarks?","acceptedAnswer":{"@type":"Answer","text":"Yes. Each part is named after its bookmark, for example 'Chapter 1 - Introduction.pdf'. Characters that are not allowed in file names are replaced automatically."}},
+{"@type":"Question","name":"Is my PDF uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The tool runs entirely in your browser with pdf.js and pdf-lib. Your file never leaves your device."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<style>
+:root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--ivory);color:var(--ink);line-height:1.55}
+a{color:var(--gold-d)}
+header.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--gold)}
+.top nav a{margin-left:16px;text-decoration:none;color:var(--ink);font-weight:600}
+.badges{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px}
+.badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:600}
+main{max-width:1080px;margin:0 auto;padding:20px}
+h1{font-family:Georgia,serif;font-size:2.2rem;line-height:1.2;margin:14px 0 6px}
+h2{font-family:Georgia,serif;font-size:1.5rem;margin:32px 0 10px}
+h3{font-size:1.05rem;margin:18px 0 6px}
+.lead{color:#3d463f;font-size:1.08rem;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(166,124,46,.10);margin-top:22px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:#fff}
+.drop:hover,.drop.over{border-color:var(--gold);background:#fffaf0}
+.drop b{font-size:1.1rem}
+.drop p{color:var(--muted);margin:6px 0 0}
+.drop input{display:none}
+.fileinfo{margin-top:14px;font-weight:600}
+.levelrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0 6px}
+.levelrow select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:#fff}
+.btn{display:inline-block;background:var(--gold);color:#fff!important;border:0;border-radius:12px;padding:14px 28px;font-size:1.02rem;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(166,124,46,.35);text-decoration:none}
+.btn:hover{background:var(--gold-d)}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#fff;color:var(--ink)!important;border:1px solid var(--line);box-shadow:none}
+.btn.small{padding:9px 16px;font-size:.9rem;border-radius:10px}
+.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.progress{margin-top:16px;font-weight:600;color:#3d463f;min-height:1.5em}
+.progressbar{height:8px;background:#f0e8d6;border-radius:99px;overflow:hidden;margin-top:6px;display:none}
+.progressbar i{display:block;height:100%;background:var(--gold);width:0%}
+.tree{margin-top:18px;display:none;border:1px solid var(--line);border-radius:12px;background:#fff;padding:14px 18px;max-height:340px;overflow:auto}
+.tree ul{list-style:none;margin:4px 0;padding-left:22px}
+.tree>ul{padding-left:0}
+.tree li{padding:3px 0;font-size:.95rem}
+.tree li.splitpoint{font-weight:700}
+.tree li.splitpoint::before{content:"✂️ "; }
+.tree li.skipped{color:var(--muted)}
+.tree li.skipped::before{content:"— "; }
+.treecaption{font-size:.88rem;color:var(--muted);margin-top:8px}
+.results{margin-top:22px;display:none}
+.results table{width:100%;border-collapse:collapse}
+.results th,.results td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);font-size:.95rem}
+.results th{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+.note{background:#fff7e0;border:1px solid #f0dfae;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem}
+.note.info{background:#eef6f1;border-color:#c8e4d4}
+.note.error{background:#fdf0ef;border-color:#f2c9c4}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.step b{font-family:Georgia,serif;font-size:1.4rem;color:var(--gold)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.faq summary{font-weight:700;cursor:pointer}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.pillar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.pillar b{font-size:1.05rem}
+footer{max-width:1080px;margin:0 auto;padding:26px 20px 40px;color:var(--muted);font-size:.9rem;text-align:center}
+footer a{color:var(--muted)}
+@media(max-width:640px){h1{font-size:1.7rem}.card{padding:18px}.results table{font-size:.88rem}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="https://theeditpdf.com">The<span>Edit</span>PDF</a>
+  <nav><a href="https://theeditpdf.com/pdf-editor">Edit a PDF — it's free</a><a href="https://theeditpdf.com/split-pdf">Split PDF</a></nav>
+</header>
+<div class="badges">
+  <span class="badge">🔒 100% Private — files never leave your device</span>
+  <span class="badge">🆓 Free Forever — no limits</span>
+  <span class="badge">⚡ No Signup — start instantly</span>
+</div>
+<main>
+  <h1>Split PDF by Bookmarks</h1>
+  <p class="lead">Split a PDF at its bookmarks (table of contents) — one file per chapter or section, each named after its bookmark. Perfect for breaking a long report, ebook or manual into shareable chapters — free, with no signup, and your file never leaves your device.</p>
+
+  <section class="card" aria-label="Split PDF by bookmarks tool">
+    <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Choose a PDF file">
+      <b>📑 Choose a PDF file</b>
+      <p>or drag &amp; drop it here — processed on your device, nothing is uploaded</p>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf">
+    </div>
+    <div class="fileinfo" id="fileInfo"></div>
+
+    <div id="optionsBox" style="display:none">
+      <h3>Split at which bookmark level?</h3>
+      <div class="levelrow">
+        <label for="levelSelect">Bookmark level:</label>
+        <select id="levelSelect">
+          <option value="1">Top level only (chapters)</option>
+          <option value="2">Up to level 2 (chapters + sections)</option>
+          <option value="3">Up to level 3</option>
+          <option value="99">All levels</option>
+        </select>
+        <span style="color:var(--muted);font-size:.9rem" id="levelHint"></span>
+      </div>
+    </div>
+
+    <div class="tree" id="treeBox" aria-label="Detected bookmarks">
+      <b>Bookmarks found</b>
+      <div id="treeList"></div>
+      <div class="treecaption" id="treeCaption"></div>
+    </div>
+    <div class="note error" id="noBookmarksBox" style="display:none"></div>
+
+    <div class="actions">
+      <button class="btn" id="splitBtn" disabled>✂️ Split by Bookmarks</button>
+      <button class="btn secondary" id="resetBtn" style="display:none">Start over</button>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div class="progressbar" id="progressbar"><i id="progressFill"></i></div>
+
+    <div class="results" id="results">
+      <h3 id="resultsTitle">Your split files</h3>
+      <table>
+        <thead><tr><th>Part</th><th>Bookmark</th><th>Pages</th><th>Size</th><th></th></tr></thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+      <div class="actions">
+        <button class="btn" id="zipBtn">📦 Download all as ZIP</button>
+      </div>
+      <div class="note" id="warningsBox" style="display:none"></div>
+    </div>
+    <div class="note info">Tip: no bookmarks in your PDF? Use <a href="https://theeditpdf.com/split-pdf-by-size">Split by Size</a> or <a href="https://theeditpdf.com/extract-pages">Extract Pages</a> instead — or add bookmarks to the PDF first in a desktop PDF editor and try again.</div>
+  </section>
+
+  <h2>How to split a PDF by bookmarks</h2>
+  <div class="steps">
+    <div class="step"><b>01</b><p><strong>Choose your PDF.</strong> Its bookmarks (table of contents) are read instantly, right in your browser.</p></div>
+    <div class="step"><b>02</b><p><strong>Pick a bookmark level</strong> — top-level chapters only, or deeper sections too — and see exactly which bookmarks become split points.</p></div>
+    <div class="step"><b>03</b><p><strong>Click Split.</strong> Every chapter becomes its own PDF, named after its bookmark. Download each part or all of them as a ZIP.</p></div>
+  </div>
+
+  <h2>When is splitting by bookmarks useful?</h2>
+  <p>Long documents — ebooks, reports, manuals, course material — are usually organised into chapters, and those chapters are stored as bookmarks. Splitting by bookmarks turns one big file into clean, sensibly named chapter files without you having to look up page numbers. A teacher can hand out one chapter at a time, a team can share just the relevant section of a report, and an ebook reader can keep each chapter as its own file. Because each part keeps the original pages' fonts and images, quality is identical to the source.</p>
+
+  <h2>Frequently asked questions</h2>
+  <div class="faq">
+    <details><summary>How do I split a PDF by bookmarks?</summary><p>Upload your PDF and the tool reads its bookmarks (table of contents). Choose which bookmark level to split at — for example top-level chapters only — then click Split. Each bookmark becomes its own PDF file, named after the bookmark, and you can download them individually or all at once as a ZIP.</p></details>
+    <details><summary>What if my PDF has no bookmarks?</summary><p>Then there is nothing to split by. The tool tells you so clearly instead of failing silently. Use Split PDF by Size or Extract Pages instead, or add bookmarks to the PDF first (for example in a desktop PDF editor) and try again.</p></details>
+    <details><summary>What happens to pages before the first bookmark?</summary><p>Pages before the first split bookmark (for example a cover or preface) are kept together as their own first file, so no pages are ever lost.</p></details>
+    <details><summary>Are the output files named after the bookmarks?</summary><p>Yes. Each part is named after its bookmark, for example "Chapter 1 - Introduction.pdf". Characters that are not allowed in file names are replaced automatically.</p></details>
+    <details><summary>Is my PDF uploaded anywhere?</summary><p>No. The tool runs entirely in your browser with pdf.js and pdf-lib. Your file never leaves your device.</p></details>
+  </div>
+
+  <h2>Why TheEditPDF?</h2>
+  <div class="pillars">
+    <div class="pillar"><b>🔒 100% Private</b><p>Every tool runs entirely in your browser. Your files never leave your device — ideal for confidential legal, financial and business documents.</p></div>
+    <div class="pillar"><b>🆓 Free &amp; Unlimited</b><p>All tools free forever. No signup, no watermark, no hidden limits. What you see is what you get.</p></div>
+    <div class="pillar"><b>⚡ Nothing to Install</b><p>Works on phone, tablet and computer. Open your browser and start.</p></div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:20px">Files are processed on your device — nothing is uploaded.</p>
+</main>
+<footer>
+  <p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+</footer>
+<script>
+(function(){
+"use strict";
+if(window.pdfjsLib){
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";
+}
+var fileInput=document.getElementById("fileInput"),
+    dropZone=document.getElementById("dropZone"),
+    fileInfo=document.getElementById("fileInfo"),
+    optionsBox=document.getElementById("optionsBox"),
+    levelSelect=document.getElementById("levelSelect"),
+    levelHint=document.getElementById("levelHint"),
+    treeBox=document.getElementById("treeBox"),
+    treeList=document.getElementById("treeList"),
+    treeCaption=document.getElementById("treeCaption"),
+    noBookmarksBox=document.getElementById("noBookmarksBox"),
+    splitBtn=document.getElementById("splitBtn"),
+    resetBtn=document.getElementById("resetBtn"),
+    zipBtn=document.getElementById("zipBtn"),
+    progress=document.getElementById("progress"),
+    progressbar=document.getElementById("progressbar"),
+    progressFill=document.getElementById("progressFill"),
+    results=document.getElementById("results"),
+    resultsBody=document.getElementById("resultsBody"),
+    resultsTitle=document.getElementById("resultsTitle"),
+    warningsBox=document.getElementById("warningsBox"),
+    srcBytes=null,
+    srcName="document.pdf",
+    totalPages=0,
+    flatBookmarks=[],   /* {title, level, page} in document order */
+    splitPoints=[],     /* filtered by selected level, deduped by page */
+    skippedCount=0,
+    parts=[];
+
+function fmt(bytes){
+  if(bytes>=1048576)return (bytes/1048576).toFixed(2)+" MB";
+  if(bytes>=1024)return (bytes/1024).toFixed(1)+" KB";
+  return bytes+" B";
+}
+function baseName(name){
+  return name.replace(/\.pdf$/i,"")||"document";
+}
+/* Strip characters illegal in file names on Windows/macOS, collapse spaces. */
+function safeFileName(title){
+  var s=(title||"Part").replace(/[\\/:*?"<>|]/g," ").replace(/\s+/g," ").trim();
+  if(s.length>80)s=s.slice(0,80).trim();
+  return s||"Part";
+}
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function setProgress(msg,pct){
+  progress.textContent=msg||"";
+  if(typeof pct==="number"){
+    progressbar.style.display="block";
+    progressFill.style.width=pct+"%";
+  }else{
+    progressbar.style.display="none";
+    progressFill.style.width="0%";
+  }
+}
+function downloadBlob(blob,name){
+  var url=URL.createObjectURL(blob),
+      a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}a.remove();},30000);
+}
+function clearState(){
+  parts=[];
+  flatBookmarks=[];
+  splitPoints=[];
+  skippedCount=0;
+  resultsBody.innerHTML="";
+  results.style.display="none";
+  treeBox.style.display="none";
+  treeList.innerHTML="";
+  noBookmarksBox.style.display="none";
+  noBookmarksBox.innerHTML="";
+  optionsBox.style.display="none";
+  warningsBox.style.display="none";
+  warningsBox.innerHTML="";
+}
+
+dropZone.addEventListener("click",function(){fileInput.click();});
+dropZone.addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}
+});
+["dragover","dragenter"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add("over");});
+});
+["dragleave","drop"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove("over");});
+});
+dropZone.addEventListener("drop",function(e){
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f)handleFile(f);
+});
+fileInput.addEventListener("change",function(){
+  var f=fileInput.files&&fileInput.files[0];
+  if(f)handleFile(f);
+  fileInput.value="";
+});
+
+/* Resolve one outline item's destination to a 0-based page index.
+   Returns -1 when the bookmark has no usable page destination
+   (external URL, broken link, or unresolvable named destination). */
+async function resolvePage(pdfDoc,item){
+  try{
+    if(!item.dest)return -1;
+    var dest=item.dest;
+    if(typeof dest==="string"){
+      dest=await pdfDoc.getDestination(dest);
+      if(!dest)return -1;
+    }
+    if(!Array.isArray(dest)||!dest.length)return -1;
+    var idx=await pdfDoc.getPageIndex(dest[0]);
+    if(typeof idx!=="number"||idx<0)return -1;
+    return idx;
+  }catch(e){
+    return -1;
+  }
+}
+
+async function walkOutline(pdfDoc,items,level,out){
+  for(var i=0;i<items.length;i++){
+    var item=items[i];
+    var page=await resolvePage(pdfDoc,item);
+    out.push({title:item.title||"Untitled",level:level,page:page});
+    if(item.items&&item.items.length){
+      await walkOutline(pdfDoc,item.items,level+1,out);
+    }
+  }
+}
+
+/* Rebuild the visible tree + split points whenever the level changes. */
+function refreshSplitPoints(){
+  var maxLevel=parseInt(levelSelect.value,10);
+  var seen={};
+  splitPoints=[];
+  skippedCount=0;
+  flatBookmarks.forEach(function(b){
+    if(b.page<0){skippedCount++;return;}
+    if(b.level>maxLevel)return;
+    if(seen[b.page])return; /* two bookmarks on the same page: keep the first */
+    seen[b.page]=true;
+    splitPoints.push(b);
+  });
+  splitPoints.sort(function(a,b){return a.page-b.page;});
+  levelHint.textContent=splitPoints.length
+    ?(splitPoints.length+" split point"+(splitPoints.length===1?"":"s")+" — "+splitPoints.length+" chapter file"+(splitPoints.length===1?"":"s")+" (+ cover part if pages come before the first bookmark)")
+    :"No bookmarks at this level — pick a deeper level.";
+  renderTree(maxLevel);
+  splitBtn.disabled=splitPoints.length===0;
+}
+
+function renderTree(maxLevel){
+  function build(items,level){
+    var html="<ul>";
+    items.forEach(function(b){
+      if(b.level!==level)return;
+      var isPoint=splitPoints.indexOf(b)>=0;
+      var cls=isPoint?"splitpoint":(b.page<0?"skipped":"");
+      var label=esc(b.title)+" <span style='color:var(--muted);font-weight:400;font-size:.85rem'>(page "+(b.page>=0?(b.page+1):"unknown")+")</span>";
+      html+="<li class='"+cls+"'>"+label;
+      var kids=flatBookmarks.filter(function(k){return k.level===level+1;});
+      /* Only nest children that directly follow this bookmark in document order. */
+      var start=flatBookmarks.indexOf(b)+1,childList=[];
+      for(var j=start;j<flatBookmarks.length;j++){
+        if(flatBookmarks[j].level<=level)break;
+        if(flatBookmarks[j].level===level+1)childList.push(flatBookmarks[j]);
+      }
+      if(childList.length)html+=build(childList,level+1);
+      html+="</li>";
+    });
+    return html+"</ul>";
+  }
+  var top=flatBookmarks.filter(function(b){return b.level===1;});
+  treeList.innerHTML=build(top,1);
+  var notes=[];
+  if(skippedCount)notes.push(skippedCount+" bookmark"+(skippedCount===1?"":"s")+" could not be mapped to a page and will be skipped.");
+  var coverCount=splitPoints.length?splitPoints[0].page:0;
+  if(coverCount>0)notes.push("Pages 1–"+coverCount+" come before the first bookmark and will form their own first file.");
+  treeCaption.textContent="✂️ = split point at the chosen level. "+notes.join(" ");
+  treeBox.style.display="block";
+}
+
+levelSelect.addEventListener("change",function(){
+  if(flatBookmarks.length)refreshSplitPoints();
+});
+
+async function handleFile(file){
+  if(!/\.pdf$/i.test(file.name)&&file.type!=="application/pdf"){
+    setProgress("Please choose a PDF file.");
+    return;
+  }
+  clearState();
+  resetBtn.style.display="inline-block";
+  setProgress("Reading "+file.name+"…");
+  try{
+    if(!window.pdfjsLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    srcBytes=new Uint8Array(await file.arrayBuffer());
+    srcName=file.name;
+    var pdfDoc=await window.pdfjsLib.getDocument({data:srcBytes.slice()}).promise;
+    totalPages=pdfDoc.numPages;
+    fileInfo.textContent="📑 "+file.name+" · "+totalPages+" page"+(totalPages===1?"":"s")+" · "+fmt(srcBytes.length);
+    setProgress("Reading bookmarks…");
+    var outline=await pdfDoc.getOutline();
+    if(!outline||!outline.length){
+      noBookmarksBox.innerHTML="<b>This PDF has no bookmarks.</b><br>There is no table of contents to split by, so nothing can be created from this file. Try <a href=\"https://theeditpdf.com/split-pdf-by-size\">Split by Size</a> or <a href=\"https://theeditpdf.com/extract-pages\">Extract Pages</a> instead — or add bookmarks to the PDF first in a desktop PDF editor and upload it again.";
+      noBookmarksBox.style.display="block";
+      setProgress("No bookmarks found in this PDF.");
+      splitBtn.disabled=true;
+      return;
+    }
+    var flat=[];
+    await walkOutline(pdfDoc,outline,1,flat);
+    flatBookmarks=flat;
+    /* Offer level options only up to the deepest level actually present. */
+    var maxDepth=1;
+    flatBookmarks.forEach(function(b){if(b.level>maxDepth)maxDepth=b.level;});
+    Array.prototype.slice.call(levelSelect.options).forEach(function(opt){
+      var v=parseInt(opt.value,10);
+      opt.disabled=(v!==99&&v>maxDepth);
+    });
+    if(parseInt(levelSelect.value,10)!==99&&parseInt(levelSelect.value,10)>maxDepth){
+      levelSelect.value="1";
+    }
+    optionsBox.style.display="block";
+    refreshSplitPoints();
+    setProgress(flatBookmarks.length+" bookmark"+(flatBookmarks.length===1?"":"s")+" found — pick a level and click Split.");
+  }catch(e){
+    setProgress("Could not open that PDF: "+(e&&e.message?e.message:"unknown error"));
+    splitBtn.disabled=true;
+  }
+}
+
+resetBtn.addEventListener("click",function(){
+  srcBytes=null;srcName="document.pdf";totalPages=0;
+  fileInfo.textContent="";splitBtn.disabled=true;
+  resetBtn.style.display="none";clearState();setProgress("");
+});
+
+splitBtn.addEventListener("click",async function(){
+  if(!srcBytes||!splitPoints.length)return;
+  splitBtn.disabled=true;
+  clearResultsOnly();
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    setProgress("Loading document…",5);
+    var srcDoc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var total=srcDoc.getPageCount();
+    /* Build part boundaries: [startPage, endPage, title]. */
+    var boundaries=[];
+    var usedNames={};
+    function uniqueName(title){
+      var s=safeFileName(title),n=s,k=2;
+      while(usedNames[n]){n=s+" ("+k+")";k++;}
+      usedNames[n]=true;
+      return n;
+    }
+    if(splitPoints[0].page>0){
+      boundaries.push({from:0,to:splitPoints[0].page-1,
+        title:uniqueName("Beginning (before "+splitPoints[0].title+")")});
+    }
+    splitPoints.forEach(function(sp,idx){
+      var to=(idx+1<splitPoints.length)?splitPoints[idx+1].page-1:total-1;
+      boundaries.push({from:sp.page,to:to,title:uniqueName(sp.title)});
+    });
+    var base=baseName(srcName);
+    parts=[];
+    for(var i=0;i<boundaries.length;i++){
+      var b=boundaries[i];
+      var idxs=[];
+      for(var p=b.from;p<=b.to;p++)idxs.push(p);
+      var out=await window.PDFLib.PDFDocument.create();
+      var copied=await out.copyPages(srcDoc,idxs);
+      copied.forEach(function(pg){out.addPage(pg);});
+      var bytes=await out.save();
+      parts.push({name:b.title+".pdf",from:b.from,to:b.to,bytes:bytes,
+        blob:new Blob([bytes],{type:"application/pdf"})});
+      setProgress("Building part "+(i+1)+" of "+boundaries.length+"…",
+        5+Math.round(((i+1)/boundaries.length)*85));
+    }
+    renderResults();
+    setProgress("Done — "+parts.length+" file"+(parts.length===1?"":"s")+" created from "+total+" page"+(total===1?"":"s")+".",100);
+  }catch(e){
+    setProgress("Split failed: "+(e&&e.message?e.message:e));
+  }finally{
+    splitBtn.disabled=splitPoints.length>0;
+  }
+});
+
+function clearResultsOnly(){
+  parts=[];
+  resultsBody.innerHTML="";
+  results.style.display="none";
+  warningsBox.style.display="none";
+  warningsBox.innerHTML="";
+}
+
+function renderResults(){
+  resultsBody.innerHTML="";
+  parts.forEach(function(p,idx){
+    var tr=document.createElement("tr");
+    var first=p.from+1,last=p.to+1;
+    var range=first===last?("Page "+first):("Pages "+first+"–"+last);
+    var td1=document.createElement("td");td1.textContent="Part "+(idx+1);
+    var td2=document.createElement("td");td2.textContent=p.name;
+    var td3=document.createElement("td");td3.textContent=range;
+    var td4=document.createElement("td");td4.textContent=fmt(p.bytes.length);
+    var td5=document.createElement("td");
+    var btn=document.createElement("button");
+    btn.className="btn secondary small";btn.textContent="⬇ Download";
+    (function(part){btn.addEventListener("click",function(){downloadBlob(part.blob,part.name);});})(p);
+    td5.appendChild(btn);
+    tr.appendChild(td1);tr.appendChild(td2);tr.appendChild(td3);tr.appendChild(td4);tr.appendChild(td5);
+    resultsBody.appendChild(tr);
+  });
+  resultsTitle.textContent="Your split files — "+parts.length+" part"+(parts.length===1?"":"s");
+  results.style.display="block";
+}
+
+zipBtn.addEventListener("click",async function(){
+  if(!parts.length)return;
+  if(!window.JSZip){setProgress("ZIP engine could not load. Download parts individually.");return;}
+  zipBtn.disabled=true;
+  try{
+    setProgress("Building ZIP…");
+    var zip=new window.JSZip();
+    parts.forEach(function(p){zip.file(p.name,p.blob);});
+    var blob=await zip.generateAsync({type:"blob"});
+    downloadBlob(blob,baseName(srcName)+"-by-bookmarks.zip");
+    setProgress("ZIP downloaded — "+parts.length+" files.");
+  }catch(e){
+    setProgress("ZIP failed: "+(e&&e.message?e.message:e));
+  }finally{
+    zipBtn.disabled=false;
+  }
+});
+})();
+</script>
+</body>
+</html>
