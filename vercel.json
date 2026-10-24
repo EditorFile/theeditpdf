@@ -188,7 +188,7 @@
       "destination": "/index.html"
     },
     {
-      "source": "/pdf2go-alternative",
+      "source": "/pdf2go-alternative",       "destination": "/index.html"     },     {       "source": "/blog",       "destination": "/index.html"     },     {       "source": "/how-to-delete-pages-from-pdf",       "destination": "/index.html"     },     {       "source": "/how-to-compress-pdf-to-100kb",       "destination": "/index.html"     },     {       "source": "/how-to-merge-pdf-files",
       "destination": "/index.html"
     }
   ],
