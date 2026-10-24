@@ -1432,6 +1432,13 @@ async function te_verify(PDFJS,bytes,applied){
 
 
 
+
+// Timeout helper for Download (F1 fix)
+window._dlTimeout=function(promise,ms,msg){
+return Promise.race([promise,new Promise(function(_,reject){
+setTimeout(function(){reject(new Error(msg||"Operation timed out"));},ms);
+})]);
+};
 H.addEventListener("click",async function(){if(K){H.disabled=!0,H.textContent="Saving…",ae();try{if(!window.PDFLib||!window.PDFLib.PDFDocument)throw new Error("The PDF engine could not load. Check your connection and try again.");var _PL=window.PDFLib;
 var _scriptFontCache=null;
 async function _getScriptFont(t){if(_scriptFontCache)return _scriptFontCache;try{var _ac=typeof AbortController!=="undefined"?new AbortController():null,_to=null;if(_ac){_to=setTimeout(function(){try{_ac.abort();}catch(_ae){}},10000);}var r=await fetch('fonts/GreatVibes-Regular.ttf',_ac?{signal:_ac.signal}:undefined);if(_to)clearTimeout(_to);if(!r.ok)return null;var b=await r.arrayBuffer();_scriptFontCache=await t.embedFont(b);return _scriptFontCache;}catch(e){return null;}}
@@ -1454,13 +1461,21 @@ try{if(_fld&&typeof _fvExportField==="function"){var _fvr=_fvExportField(t,_fld,
 }catch(_fe){}}
 }try{if(typeof _fvExportOrder==="function")_fvExportOrder(t,_fvCalcRefs);}catch(_fvo){}
 var B=await t.save();return{B:B,R:_teR};}
-var _Rs=await _doSave(true),_vok=true;
-if(_Rs.R.applied.size){try{_vok=await te_verify(window.pdfjsLib,_Rs.B,_Rs.R.applied);}catch(_ve){_vok=false;}
+var _Rs=await window._dlTimeout(_doSave(true),90000,"Save timed out - please try again"),_vok=true;
+if(_Rs.R.applied.size){try{_vok=await window._dlTimeout(te_verify(window.pdfjsLib,_Rs.B,_Rs.R.applied,60000,"Verify timed out - please try again"));}catch(_ve){_vok=false;}
 if(!_vok){try{_Rs=await _doSave(false);}catch(_re){}}}
-var B=_Rs.B,S=new Blob([B],{type:"application/pdf"});z={blob:S,name:G},j.hidden=!1,ne("Done — your edited PDF is ready.","success");if(window.TheEditPDFCompletion){try{window.TheEditPDFCompletion.show(S,G||"document-edited.pdf",{source:"editor"})}catch(_e){}}else{(function(){var _co=document.getElementById("completionOverlay"),_cf=document.getElementById("completionFileName");if(_co&&_cf){_cf.textContent=G||"document-edited.pdf";_co.hidden=!1;}})()}}catch(e){ne(e&&e.message?e.message:"The edited PDF could not be saved.","error")}H.disabled=!1,H.textContent=z?"Download again":"Download PDF"}}),j.addEventListener("click",function(){window.TheEditPDFShareAPI.share(z,ne)}),document.getElementById("deleteAnnotation").addEventListener("click",function(){pu();V?(_=_.filter(function(e){return e.id!==V}),V=null,$=null,pe(),ae()):ne("Select an item on the page first.","error")}),document.getElementById("zIn").onclick=function(){if(!W)return;ze=Math.min(3,1.25*ze);se(Y)},async function rp(d){if(!K)return;var t=await window.PDFLib.PDFDocument.load(K.slice()),n=t.getPage(Y-1);n.setRotation((n.getRotation().angle+90*d+360)%360),K=await t.save(),W=await window.pdfjsLib.getDocument({data:K.slice()}).promise,se(Y)},document.getElementById("pgRL").onclick=function(){rp(-1)},document.getElementById("pgRR").onclick=function(){rp(1)},/* ---------- Page Manager: reorder / duplicate / extract / delete ---------- */
+var B=_Rs.B,S=new Blob([B],{type:"application/pdf"});z={blob:S,name:G},j.hidden=!1,ne("Done — your edited PDF is ready.","success");if(window.TheEditPDFCompletion){try{window.TheEditPDFCompletion.show(S,G||"document-edited.pdf",{source:"editor"})}catch(_e){
+try{
+var _fb=document.createElement("a");
+var _fu=URL.createObjectURL(S);
+_fb.href=_fu;_fb.download=G||"document-edited.pdf";
+document.body.appendChild(_fb);_fb.click();
+setTimeout(function(){try{URL.revokeObjectURL(_fu);}catch(e){}_fb.remove();},30000);
+}catch(_e2){}
+}}else{(function(){var _co=document.getElementById("completionOverlay"),_cf=document.getElementById("completionFileName");if(_co&&_cf){_cf.textContent=G||"document-edited.pdf";_co.hidden=!1;}})()}}catch(e){ne(e&&e.message?e.message:"The edited PDF could not be saved.","error")}H.disabled=!1,H.textContent=z?"Download again":"Download PDF"}}),j.addEventListener("click",function(){window.TheEditPDFShareAPI.share(z,ne)}),document.getElementById("deleteAnnotation").addEventListener("click",function(){pu();V?(_=_.filter(function(e){return e.id!==V}),V=null,$=null,pe(),ae()):ne("Select an item on the page first.","error")}),document.getElementById("zIn").onclick=function(){if(!W)return;ze=Math.min(3,1.25*ze);se(Y)},async function rp(d){if(!K)return;var t=await window.PDFLib.PDFDocument.load(K.slice()),n=t.getPage(Y-1);n.setRotation((n.getRotation().angle+90*d+360)%360),K=await t.save(),W=await window.pdfjsLib.getDocument({data:K.slice()}).promise,se(Y)},document.getElementById("pgRL").onclick=function(){rp(-1)},document.getElementById("pgRR").onclick=function(){rp(1)},/* ---------- Page Manager: reorder / duplicate / extract / delete ---------- */
 async function _pmReload(){try{W.destroy()}catch(e){}W=null;try{W=await window.pdfjsLib.getDocument({data:K.slice()}).promise;}catch(e){return;}if(Y>W.numPages)Y=W.numPages;if(Y<1)Y=1;try{await bt();}catch(e){}try{_updPgLbl();}catch(e){}try{await se(Y);}catch(e){}try{ae();}catch(e){}}
 window._pmReload=_pmReload;
-async function _pmDownload(bytes,filename){var blob=new Blob([bytes],{type:"application/pdf"});if(window.showSaveFilePicker){try{var h=await window.showSaveFilePicker({suggestedName:filename,types:[{description:"PDF document",accept:{"application/pdf":[".pdf"]}}]});var w=await h.createWritable();await w.write(blob);await w.close();ne("Saved successfully.","success");return;}catch(e){if(e&&e.name==="AbortError")return;}}var u=URL.createObjectURL(blob),a2=document.createElement("a");a2.href=u;a2.download=filename;document.body.appendChild(a2);a2.click();setTimeout(function(){try{URL.revokeObjectURL(u);}catch(e){}a2.remove();},4000);ne("Downloaded "+filename,"success");}
+async function _pmDownload(bytes,filename){var blob=new Blob([bytes],{type:"application/pdf"});if(window.showSaveFilePicker){try{var h=await window.showSaveFilePicker({suggestedName:filename,types:[{description:"PDF document",accept:{"application/pdf":[".pdf"]}}]});var w=await h.createWritable();await w.write(blob);await w.close();ne("Saved successfully.","success");return;}catch(e){if(e&&e.name==="AbortError")return;}}var u=URL.createObjectURL(blob),a2=document.createElement("a");a2.href=u;a2.download=filename;document.body.appendChild(a2);a2.click();setTimeout(function(){try{URL.revokeObjectURL(u);}catch(e){}a2.remove();},30000);ne("Downloaded "+filename,"success");}
 async function _pmReorder(order){if(!K||!W||window.__pmBusy)return;window.__pmBusy=true;try{var LIB=window.PDFLib;var t=await LIB.PDFDocument.load(K.slice());var cp=await t.copyPages(t,order);var n=t.getPageCount();for(var i=n-1;i>=0;i--){try{t.removePage(i);}catch(e){}}for(var j=0;j<cp.length;j++)t.addPage(cp[j]);var map={};for(var k=0;k<order.length;k++)map[order[k]+1]=k+1;_.forEach(function(a){if(map[a.page])a.page=map[a.page];});te={};V=null;$=null;K=await t.save();if(map[Y])Y=map[Y];await window._pmReload();ne("Pages reordered.","success");}catch(e){ne("Could not reorder pages.","error");}finally{window.__pmBusy=false;}}
 async function _pmDuplicate(pages){
 if(!K||!W)return;
