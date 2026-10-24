@@ -118,6 +118,78 @@
     {
       "source": "/terms",
       "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-sejda",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sejda-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-ilovepdf",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/ilovepdf-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-smallpdf",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/smallpdf-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-pdf24",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pdf24-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-sodapdf",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/sodapdf-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-adobe-acrobat",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/adobe-acrobat-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-foxit",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/foxit-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-pdfcandy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pdfcandy-alternative",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/theeditpdf-vs-pdf2go",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pdf2go-alternative",
+      "destination": "/index.html"
     }
   ],
   "redirects": [
