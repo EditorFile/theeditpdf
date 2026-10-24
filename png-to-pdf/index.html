@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNG to PDF Online Free | TheEditPDF</title>
+<meta name="description" content="Convert PNG, JPG and WebP images to PDF online free. Drag to reorder, choose A4, Letter or fit-to-image page size. 100% in your browser — no signup, no watermark, files never leave your device.">
+<meta name="keywords" content="png to pdf, jpg to pdf, image to pdf, convert png to pdf, photos to pdf, webp to pdf">
+<link rel="canonical" href="https://theeditpdf.com/png-to-pdf">
+<meta property="og:title" content="PNG to PDF Online Free | TheEditPDF">
+<meta property="og:description" content="Turn your images into a PDF. Reorder by drag-drop, pick page size, download in seconds. Free, in-browser, no signup.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"PNG to PDF","url":"https://theeditpdf.com/png-to-pdf","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I convert PNG images to PDF?","acceptedAnswer":{"@type":"Answer","text":"Upload your PNG, JPG or WebP images, drag them into the order you want, choose a page size (A4, Letter, or Fit to image), and click Create PDF. Your PDF downloads instantly."}},
+{"@type":"Question","name":"Can I reorder the images?","acceptedAnswer":{"@type":"Answer","text":"Yes. Drag any image card to move it. The PDF pages follow the order you set. You can also remove images you do not want."}},
+{"@type":"Question","name":"What page size should I choose?","acceptedAnswer":{"@type":"Answer","text":"A4 is the standard for most documents. Letter is the US standard. Fit to image makes each PDF page exactly the size of its image — best for photos and artwork."}},
+{"@type":"Question","name":"Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion runs 100% in your browser using pdf-lib. Your images never leave your device."}},
+{"@type":"Question","name":"How many images can I add?","acceptedAnswer":{"@type":"Answer","text":"Up to 50 images, 20MB each. For larger batches, split them into multiple PDFs."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<style>
+:root{--ivory:#faf7f0;--charcoal:#1a1a1a;--gold:#a67c2e;--gold-light:#c9a96e;--line:#e5ddd0;--muted:#666}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--ivory);color:var(--charcoal);line-height:1.6}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:1.4rem;font-weight:700;text-decoration:none;color:var(--charcoal)}
+.logo span{color:var(--gold)}
+nav a{margin-left:20px;text-decoration:none;color:var(--charcoal);font-size:.95rem}
+nav a:hover{color:var(--gold)}
+main{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{font-size:2.2rem;text-align:center;margin-bottom:8px}
+.subtitle{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:32px}
+.tool-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.drop-zone{border:2px dashed var(--line);border-radius:12px;padding:48px 24px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--gold);background:#fdf9f0}
+.drop-zone .icon{font-size:3rem;margin-bottom:12px}
+.drop-zone p{color:var(--muted)}
+.drop-zone input{display:none}
+.img-grid{display:none;margin-top:24px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.img-card{border:2px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;cursor:grab;position:relative}
+.img-card.dragging{opacity:.4;border-color:var(--gold)}
+.img-card img{width:100%;display:block;max-height:180px;object-fit:contain;background:#f5f5f5}
+.img-card-body{padding:10px}
+.img-card-body strong{font-size:.9rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img-card-body span{color:var(--muted);font-size:.82rem}
+.img-remove{position:absolute;top:6px;right:6px;width:26px;height:26px;border:none;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:15px;cursor:pointer;line-height:1}
+.img-remove:hover{background:#c62828}
+.img-num{position:absolute;top:6px;left:6px;min-width:26px;height:26px;padding:0 6px;border-radius:13px;background:var(--gold);color:#fff;font-size:.82rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.size-picker{margin-top:24px}
+.size-picker label{font-weight:700;display:block;margin-bottom:12px}
+.size-options{display:flex;flex-wrap:wrap;gap:10px}
+.size-btn{padding:12px 20px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:1rem;transition:.15s}
+.size-btn:hover{border-color:var(--gold)}
+.size-btn.active{border-color:var(--gold);background:#fdf6e3;font-weight:700}
+.size-note{margin-top:8px;color:var(--muted);font-size:.9rem}
+.create-btn{display:block;width:100%;margin-top:28px;padding:16px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-size:1.15rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.create-btn:hover{background:#8a6a28}
+.create-btn:disabled{opacity:.5;cursor:not-allowed}
+.progress{display:none;margin-top:24px}
+.progress-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);width:0%;transition:width .3s}
+.progress-text{text-align:center;margin-top:8px;color:var(--muted);font-size:.9rem}
+.results{display:none;margin-top:24px;padding:20px;background:#f0f7ee;border:1px solid #c8e6c9;border-radius:12px;text-align:center}
+.results h3{margin-bottom:8px}
+.results p{color:var(--muted);margin-bottom:14px}
+.download-btn{display:inline-block;padding:14px 32px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.download-btn:hover{background:#1b5e20}
+.error{display:none;margin-top:16px;padding:14px;background:#fde8e8;border:1px solid #f5c6c6;border-radius:8px;color:#c62828}
+.hint{margin-top:16px;color:var(--muted);font-size:.9rem;text-align:center}
+.faq{margin-top:48px}
+.faq h2{font-size:1.5rem;margin-bottom:20px}
+.faq-item{margin-bottom:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+.faq-q{font-weight:700;margin-bottom:6px}
+footer{text-align:center;padding:32px 20px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:48px}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:600px){h1{font-size:1.6rem}.tool-card{padding:20px}.drop-zone{padding:32px 16px}}
+</style>
+</head>
+<body>
+<header>
+<a href="https://theeditpdf.com" class="logo">The<span>Edit</span>PDF</a>
+<nav>
+<a href="https://theeditpdf.com">All Tools</a>
+<a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>
+<a href="https://theeditpdf.com/jpg-to-pdf">JPG to PDF</a>
+</nav>
+</header>
+
+<main>
+<h1>PNG to PDF Online Free</h1>
+<p class="subtitle">Turn PNG, JPG and WebP images into a PDF. Drag to reorder, pick a page size, download in seconds. 100% free, in your browser — no signup, no watermark.</p>
+
+<div class="tool-card">
+<div class="drop-zone" id="dropZone">
+<div class="icon">🖼️</div>
+<p><strong>Drop images here</strong> or click to browse</p>
+<p style="margin-top:8px;font-size:.85rem">PNG · JPG · WebP · Up to 50 images, 20MB each</p>
+<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" multiple>
+</div>
+
+<div class="img-grid" id="imgGrid"></div>
+<p class="hint" id="orderHint" style="display:none">↕ Drag cards to reorder pages · ✕ removes an image</p>
+
+<div class="size-picker">
+<label>Page size:</label>
+<div class="size-options">
+<button class="size-btn active" data-size="a4">A4</button>
+<button class="size-btn" data-size="letter">Letter</button>
+<button class="size-btn" data-size="fit">Fit to image</button>
+</div>
+<p class="size-note">A4 (595 × 842 pt) is the standard document size. Letter (612 × 792 pt) is the US standard. Fit makes each page exactly match its image.</p>
+</div>
+
+<button class="create-btn" id="createBtn" disabled>Create PDF</button>
+
+<div class="progress" id="progress">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<p class="progress-text" id="progressText">Building PDF…</p>
+</div>
+
+<div class="error" id="error"></div>
+
+<div class="results" id="results">
+<h3>✅ Your PDF is ready!</h3>
+<p id="resultsMeta"></p>
+<button class="download-btn" id="downloadBtn">⬇ Download PDF</button>
+</div>
+</div>
+
+<div class="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item">
+<p class="faq-q">How do I convert PNG images to PDF?</p>
+<p>Upload your PNG, JPG or WebP images, drag them into the order you want, choose a page size (A4, Letter, or Fit to image), and click Create PDF. Your PDF downloads instantly.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Can I reorder the images?</p>
+<p>Yes. Drag any image card to move it. The PDF pages follow the order you set. You can also remove images you do not want.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">What page size should I choose?</p>
+<p>A4 is the standard for most documents. Letter is the US standard. Fit to image makes each PDF page exactly the size of its image — best for photos and artwork.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Are my images uploaded to a server?</p>
+<p>No. Conversion runs 100% in your browser using pdf-lib. Your images never leave your device.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">How many images can I add?</p>
+<p>Up to 50 images, 20MB each. For larger batches, split them into multiple PDFs.</p>
+</div>
+</div>
+</main>
+
+<footer>
+<p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+<p style="margin-top:8px">Files are processed 100% in your browser. Nothing is uploaded.</p>
+</footer>
+
+<script>
+(function(){
+var images=[],pageSize='a4',resultBytes=null,dragIdx=-1;
+var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput'),
+imgGrid=document.getElementById('imgGrid'),orderHint=document.getElementById('orderHint'),
+createBtn=document.getElementById('createBtn'),progress=document.getElementById('progress'),
+progressFill=document.getElementById('progressFill'),progressText=document.getElementById('progressText'),
+errorBox=document.getElementById('error'),results=document.getElementById('results'),
+resultsMeta=document.getElementById('resultsMeta'),downloadBtn=document.getElementById('downloadBtn');
+
+function showError(msg){errorBox.textContent=msg;errorBox.style.display='block';}
+function hideError(){errorBox.style.display='none';}
+function fmtBytes(b){if(b<1024)return b+' B';if(b<1048576)return (b/1024).toFixed(1)+' KB';return (b/1048576).toFixed(2)+' MB';}
+
+dropZone.addEventListener('click',function(){fileInput.click();});
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('dragover');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('dragover');});
+dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('dragover');addFiles(e.dataTransfer.files);});
+fileInput.addEventListener('change',function(){addFiles(fileInput.files);fileInput.value='';});
+
+function addFiles(list){
+hideError();
+var added=0;
+for(var i=0;i<list.length;i++){
+var f=list[i];
+if(images.length>=50){showError('Maximum 50 images. Some files were skipped.');break;}
+if(!/^image\/(png|jpeg|webp)$/.test(f.type)){continue;}
+if(f.size>20*1024*1024){showError('Skipped '+f.name+' — larger than 20MB.');continue;}
+images.push({file:f,url:URL.createObjectURL(f)});
+added++;
+}
+if(added)renderGrid();
+}
+
+function renderGrid(){
+imgGrid.innerHTML='';
+if(!images.length){imgGrid.style.display='none';orderHint.style.display='none';createBtn.disabled=true;return;}
+imgGrid.style.display='grid';orderHint.style.display='block';
+images.forEach(function(item,idx){
+var card=document.createElement('div');card.className='img-card';card.draggable=true;
+card.dataset.idx=idx;
+var num=document.createElement('span');num.className='img-num';num.textContent=idx+1;
+var rm=document.createElement('button');rm.className='img-remove';rm.textContent='×';rm.title='Remove';
+rm.addEventListener('click',function(e){e.stopPropagation();URL.revokeObjectURL(item.url);images.splice(idx,1);renderGrid();});
+var img=document.createElement('img');img.src=item.url;img.alt=item.file.name;img.draggable=false;
+var body=document.createElement('div');body.className='img-card-body';
+var st=document.createElement('strong');st.textContent=item.file.name;
+var sp=document.createElement('span');sp.textContent=fmtBytes(item.file.size);
+body.appendChild(st);body.appendChild(sp);
+card.appendChild(num);card.appendChild(rm);card.appendChild(img);card.appendChild(body);
+card.addEventListener('dragstart',function(e){dragIdx=idx;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+card.addEventListener('dragend',function(){card.classList.remove('dragging');dragIdx=-1;});
+card.addEventListener('dragover',function(e){e.preventDefault();e.dataTransfer.dropEffect='move';});
+card.addEventListener('drop',function(e){
+e.preventDefault();
+if(dragIdx<0||dragIdx===idx)return;
+var moved=images.splice(dragIdx,1)[0];
+images.splice(idx,0,moved);
+renderGrid();
+});
+imgGrid.appendChild(card);
+});
+createBtn.disabled=false;
+results.style.display='none';resultBytes=null;
+}
+
+document.querySelectorAll('.size-btn').forEach(function(btn){
+btn.addEventListener('click',function(){
+document.querySelectorAll('.size-btn').forEach(function(b){b.classList.remove('active');});
+btn.classList.add('active');
+pageSize=btn.dataset.size;
+});
+});
+
+createBtn.addEventListener('click',async function(){
+if(!images.length)return;
+hideError();
+createBtn.disabled=true;
+progress.style.display='block';
+results.style.display='none';
+try{
+if(!window.PDFLib)throw new Error('PDF engine could not load. Check your connection and try again.');
+var doc=await window.PDFLib.PDFDocument.create();
+for(var i=0;i<images.length;i++){
+progressText.textContent='Adding image '+(i+1)+' of '+images.length+'…';
+progressFill.style.width=Math.round(i/images.length*100)+'%';
+var buf=await images[i].file.arrayBuffer();
+var img,dim;
+if(images[i].file.type==='image/png'){
+img=await doc.embedPng(buf);
+}else{
+img=await doc.embedJpg(buf);
+}
+dim=img.scale(1);
+var page;
+if(pageSize==='a4'){page=doc.addPage([595.28,841.89]);}
+else if(pageSize==='letter'){page=doc.addPage([612,792]);}
+else{page=doc.addPage([dim.width,dim.height]);}
+var pw=page.getWidth(),ph=page.getHeight();
+var scale=Math.min(pw/dim.width,ph/dim.height);
+var w=dim.width*scale,h=dim.height*scale;
+page.drawImage(img,{x:(pw-w)/2,y:(ph-h)/2,width:w,height:h});
+}
+progressFill.style.width='100%';
+progressText.textContent='Done!';
+resultBytes=await doc.save();
+resultsMeta.textContent=images.length+' image'+(images.length>1?'s':'')+' → 1 PDF · '+fmtBytes(resultBytes.length)+' · Page size: '+(pageSize==='a4'?'A4':pageSize==='letter'?'Letter':'Fit to image');
+progress.style.display='none';
+results.style.display='block';
+}catch(e){
+progress.style.display='none';
+showError('PDF creation failed: '+(e&&e.message?e.message:e));
+}
+createBtn.disabled=false;
+});
+
+downloadBtn.addEventListener('click',function(){
+if(!resultBytes)return;
+var blob=new Blob([resultBytes],{type:'application/pdf'});
+var a=document.createElement('a');
+var url=URL.createObjectURL(blob);
+a.href=url;a.download='images-to-pdf.pdf';document.body.appendChild(a);a.click();
+setTimeout(function(){URL.revokeObjectURL(url);a.remove();},30000);
+});
+})();
+</script>
+</body>
+</html>
