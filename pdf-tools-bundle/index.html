@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grayscale, Flatten, Resize PDF Online Free | TheEditPDF</title>
+<meta name="description" content="Grayscale PDF, flatten PDF forms, resize PDF pages, add header/footer and N-up layouts — 5 free PDF tools in one page. 100% in your browser, no signup, no watermark.">
+<meta name="keywords" content="grayscale pdf, flatten pdf, resize pdf, add header footer pdf, n-up pdf, 2 pages per sheet, pdf tools bundle">
+<link rel="canonical" href="https://theeditpdf.com/pdf-tools-bundle">
+<meta property="og:title" content="Grayscale, Flatten, Resize PDF Online Free | TheEditPDF">
+<meta property="og:description" content="5 PDF tools in one page: grayscale, flatten, resize, header/footer and N-up layout. Free, in-browser, no signup.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"PDF Tools Bundle","url":"https://theeditpdf.com/pdf-tools-bundle","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I convert a PDF to grayscale?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, open the Grayscale tab and click Convert to Grayscale. Every page is re-rendered in black and white and downloaded as a new PDF — ideal for printing without colour ink."}},
+{"@type":"Question","name":"What does flattening a PDF do?","acceptedAnswer":{"@type":"Answer","text":"Flattening merges fillable form fields into the page content, so the filled-in values can no longer be edited or accidentally cleared. The Flatten tab uses pdf-lib to flatten all AcroForm fields in your PDF."}},
+{"@type":"Question","name":"Can I resize a PDF to A4 or Letter?","acceptedAnswer":{"@type":"Answer","text":"Yes. The Resize tab offers A4, Letter, Legal, A5 and custom sizes. Choose 'Keep content position' to preserve vector text, or 'Scale content to fit' to stretch or shrink each page to fill the new size exactly."}},
+{"@type":"Question","name":"How do I add page numbers or a header to every page?","acceptedAnswer":{"@type":"Answer","text":"Use the Header/Footer tab: type your header and footer text, use {page} for the page number, {total} for the total page count and {date} for today's date, pick a position and font size, then apply to all pages at once."}},
+{"@type":"Question","name":"What is N-up layout in a PDF?","acceptedAnswer":{"@type":"Answer","text":"N-up puts multiple source pages onto one sheet — 2, 4 or 6 pages per sheet — so you can print handouts or save paper. The N-up tab renders each page and arranges them in a grid on A4 or Letter sheets."}},
+{"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. All five tools run 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device."}}
+]}
+</script>
+<style>
+:root{--ivory:#faf7f0;--charcoal:#1a1a1a;--gold:#a67c2e;--gold-light:#c9a96e;--line:#e5ddd0;--muted:#666}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--ivory);color:var(--charcoal);line-height:1.6}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:1.4rem;font-weight:700;text-decoration:none;color:var(--charcoal)}
+.logo span{color:var(--gold)}
+nav a{margin-left:20px;text-decoration:none;color:var(--charcoal);font-size:.95rem}
+nav a:hover{color:var(--gold)}
+main{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{font-size:2.1rem;text-align:center;margin-bottom:8px}
+.subtitle{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:32px}
+.tool-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.drop-zone{border:2px dashed var(--line);border-radius:12px;padding:44px 24px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--gold);background:#fdf9f0}
+.drop-zone .icon{font-size:3rem;margin-bottom:12px}
+.drop-zone p{color:var(--muted)}
+.drop-zone input{display:none}
+.file-info{display:none;margin-top:20px;padding:16px;background:#f9f6f0;border-radius:8px}
+.file-info strong{display:block;font-size:1.05rem}
+.file-info span{color:var(--muted);font-size:.9rem}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px;border-bottom:2px solid var(--line);padding-bottom:12px}
+.tab-btn{padding:10px 18px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:.95rem;transition:.15s}
+.tab-btn:hover{border-color:var(--gold)}
+.tab-btn.active{border-color:var(--gold);background:#fdf6e3;font-weight:700}
+.tab-panel{display:none;margin-top:24px}
+.tab-panel.active{display:block}
+.tab-panel h3{margin-bottom:6px}
+.tab-panel .desc{color:var(--muted);font-size:.95rem;margin-bottom:20px}
+.field{margin-bottom:16px}
+.field label{font-weight:700;display:block;margin-bottom:6px;font-size:.95rem}
+.field input[type=text],.field input[type=number],.field select{padding:10px 12px;border:2px solid var(--line);border-radius:8px;font-size:1rem;font-family:inherit;width:100%;max-width:420px}
+.field .hint{color:var(--muted);font-size:.85rem;margin-top:4px}
+.field-row{display:flex;gap:16px;flex-wrap:wrap}
+.field-row .field{flex:1;min-width:160px}
+.opt-row{display:flex;flex-wrap:wrap;gap:10px}
+.opt-btn{padding:10px 18px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:.95rem}
+.opt-btn:hover{border-color:var(--gold)}
+.opt-btn.active{border-color:var(--gold);background:#fdf6e3;font-weight:700}
+.radio-row label{font-weight:400;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;cursor:pointer}
+.radio-row input{margin-top:5px}
+.action-btn{display:block;width:100%;margin-top:8px;padding:16px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.action-btn:hover{background:#8a6a28}
+.action-btn:disabled{opacity:.5;cursor:not-allowed}
+.progress{display:none;margin-top:20px}
+.progress-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);width:0%;transition:width .3s}
+.progress-text{text-align:center;margin-top:8px;color:var(--muted);font-size:.9rem}
+.results{display:none;margin-top:20px;padding:20px;background:#f0f7ee;border:1px solid #c8e6c9;border-radius:12px}
+.results h3{margin-bottom:10px}
+.results p{font-size:.95rem}
+.download-btn{display:block;width:100%;margin-top:16px;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:1.05rem;font-weight:700;cursor:pointer;font-family:inherit}
+.download-btn:hover{background:#1b5e20}
+.error{display:none;margin-top:16px;padding:14px;background:#fde8e8;border:1px solid #f5c6c6;border-radius:8px;color:#c62828}
+.note{margin-top:14px;padding:12px 16px;background:#fdf9f0;border:1px solid var(--line);border-radius:8px;font-size:.9rem;color:var(--muted)}
+.faq{margin-top:48px}
+.faq h2{font-size:1.5rem;margin-bottom:20px}
+.faq-item{margin-bottom:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+.faq-q{font-weight:700;margin-bottom:6px}
+footer{text-align:center;padding:32px 20px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:48px}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:600px){h1{font-size:1.6rem}.tool-card{padding:20px}.drop-zone{padding:32px 16px}}
+</style>
+</head>
+<body>
+<header>
+<a href="https://theeditpdf.com" class="logo">The<span>Edit</span>PDF</a>
+<nav>
+<a href="https://theeditpdf.com">All Tools</a>
+<a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>
+<a href="https://theeditpdf.com/compress-pdf">Compress PDF</a>
+</nav>
+</header>
+
+<main>
+<h1>Grayscale, Flatten, Resize PDF Online Free</h1>
+<p class="subtitle">Five PDF tools in one page — grayscale, flatten, resize, header/footer and N-up. 100% free, in your browser — no signup, no watermark.</p>
+
+<div class="tool-card">
+<div class="drop-zone" id="dropZone">
+<div class="icon">📄</div>
+<p><strong>Drop your PDF here</strong> or click to browse</p>
+<p style="margin-top:8px;font-size:.85rem">Max 50MB · Works on any device</p>
+<input type="file" id="fileInput" accept="application/pdf">
+</div>
+
+<div class="file-info" id="fileInfo">
+<strong id="fileName"></strong>
+<span id="fileSize"></span>
+</div>
+
+<div class="tabs" role="tablist">
+<button class="tab-btn active" data-tab="grayscale">⬛ Grayscale</button>
+<button class="tab-btn" data-tab="flatten">🧱 Flatten</button>
+<button class="tab-btn" data-tab="resize">↔️ Resize</button>
+<button class="tab-btn" data-tab="headerfooter">🔖 Header / Footer</button>
+<button class="tab-btn" data-tab="nup">▦ N-up Layout</button>
+</div>
+
+<!-- GRAYSCALE -->
+<div class="tab-panel active" id="panel-grayscale">
+<h3>Convert PDF to Grayscale</h3>
+<p class="desc">Turn every page black &amp; white — perfect for printing without colour ink.</p>
+<div class="field">
+<label>Quality (render resolution)</label>
+<div class="opt-row" id="grayDpi">
+<button class="opt-btn" data-v="96">96 DPI (smaller file)</button>
+<button class="opt-btn active" data-v="150">150 DPI (recommended)</button>
+<button class="opt-btn" data-v="200">200 DPI (sharper)</button>
+</div>
+</div>
+<button class="action-btn" data-action="grayscale" disabled>Convert to Grayscale</button>
+<div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
+<div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download Grayscale PDF</button></div>
+<div class="error"></div>
+<p class="note">Note: grayscale pages are re-rendered as images, so text is no longer selectable in the output. The original layout and quality are otherwise preserved.</p>
+</div>
+
+<!-- FLATTEN -->
+<div class="tab-panel" id="panel-flatten">
+<h3>Flatten PDF</h3>
+<p class="desc">Merge fillable form fields into the page content so filled values can no longer be edited or cleared.</p>
+<button class="action-btn" data-action="flatten" disabled>Flatten PDF</button>
+<div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
+<div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download Flattened PDF</button></div>
+<div class="error"></div>
+<p class="note">Note: this flattens AcroForm fields (text boxes, checkboxes, dropdowns). Comment annotations such as sticky notes and highlights are left unchanged.</p>
+</div>
+
+<!-- RESIZE -->
+<div class="tab-panel" id="panel-resize">
+<h3>Resize PDF Pages</h3>
+<p class="desc">Change every page to a new size — A4, Letter, Legal, A5 or your own custom size.</p>
+<div class="field">
+<label>Target page size</label>
+<div class="opt-row" id="resizeSize">
+<button class="opt-btn active" data-v="A4">A4</button>
+<button class="opt-btn" data-v="Letter">Letter</button>
+<button class="opt-btn" data-v="Legal">Legal</button>
+<button class="opt-btn" data-v="A5">A5</button>
+<button class="opt-btn" data-v="custom">Custom</button>
+</div>
+</div>
+<div class="field-row" id="resizeCustom" style="display:none">
+<div class="field"><label>Width (mm)</label><input type="number" id="customW" min="10" max="1000" value="210"></div>
+<div class="field"><label>Height (mm)</label><input type="number" id="customH" min="10" max="1000" value="297"></div>
+</div>
+<div class="field">
+<label>Content handling</label>
+<div class="radio-row">
+<label><input type="radio" name="resizeMode" value="keep" checked> <span><strong>Keep content position</strong> — vector text stays selectable; content may leave margins or clip if the new page is smaller.</span></label>
+<label><input type="radio" name="resizeMode" value="scale"> <span><strong>Scale content to fit</strong> — each page is scaled to fill the new size exactly (pages become images, text no longer selectable).</span></label>
+</div>
+</div>
+<button class="action-btn" data-action="resize" disabled>Resize PDF</button>
+<div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
+<div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download Resized PDF</button></div>
+<div class="error"></div>
+</div>
+
+<!-- HEADER / FOOTER -->
+<div class="tab-panel" id="panel-headerfooter">
+<h3>Add Header / Footer</h3>
+<p class="desc">Stamp text on every page — headers, footers, page numbers, dates.</p>
+<div class="field">
+<label>Header text (top of page — leave empty for none)</label>
+<input type="text" id="hfHeader" placeholder="e.g. Confidential — {page} of {total}">
+<div class="hint">Tokens: {page} = page number, {total} = total pages, {date} = today's date.</div>
+</div>
+<div class="field">
+<label>Footer text (bottom of page — leave empty for none)</label>
+<input type="text" id="hfFooter" placeholder="e.g. Page {page} of {total}">
+</div>
+<div class="field-row">
+<div class="field"><label>Position</label>
+<select id="hfPos"><option value="left">Left</option><option value="center" selected>Center</option><option value="right">Right</option></select></div>
+<div class="field"><label>Font size (pt)</label><input type="number" id="hfSize" min="6" max="36" value="10"></div>
+<div class="field"><label>Margin from edge (pt)</label><input type="number" id="hfMargin" min="10" max="144" value="36"></div>
+</div>
+<button class="action-btn" data-action="headerfooter" disabled>Add Header / Footer</button>
+<div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
+<div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download PDF</button></div>
+<div class="error"></div>
+</div>
+
+<!-- N-UP -->
+<div class="tab-panel" id="panel-nup">
+<h3>N-up Layout</h3>
+<p class="desc">Put multiple pages on one sheet — save paper when printing handouts.</p>
+<div class="field">
+<label>Pages per sheet</label>
+<div class="opt-row" id="nupCount">
+<button class="opt-btn active" data-v="2">2 per sheet</button>
+<button class="opt-btn" data-v="4">4 per sheet</button>
+<button class="opt-btn" data-v="6">6 per sheet</button>
+</div>
+</div>
+<div class="field-row">
+<div class="field"><label>Sheet size</label>
+<select id="nupSheet"><option value="A4" selected>A4</option><option value="Letter">Letter</option></select></div>
+<div class="field"><label>Sheet orientation</label>
+<select id="nupOrient"><option value="portrait" selected>Portrait</option><option value="landscape">Landscape</option></select></div>
+<div class="field"><label>Render quality</label>
+<select id="nupDpi"><option value="96">96 DPI</option><option value="150" selected>150 DPI</option><option value="200">200 DPI</option></select></div>
+</div>
+<button class="action-btn" data-action="nup" disabled>Create N-up PDF</button>
+<div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
+<div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download N-up PDF</button></div>
+<div class="error"></div>
+<p class="note">Note: N-up sheets are built from rendered page images, so text is no longer selectable in the output.</p>
+</div>
+
+</div><!-- /tool-card -->
+
+<div class="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item"><p class="faq-q">How do I convert a PDF to grayscale?</p><p>Upload your PDF, open the Grayscale tab and click Convert to Grayscale. Every page is re-rendered in black and white — ideal for printing without colour ink.</p></div>
+<div class="faq-item"><p class="faq-q">What does flattening a PDF do?</p><p>Flattening merges fillable form fields into the page content, so filled-in values can no longer be edited or accidentally cleared.</p></div>
+<div class="faq-item"><p class="faq-q">Can I resize a PDF to A4 or Letter?</p><p>Yes. Pick A4, Letter, Legal, A5 or a custom size. Keep content position to preserve vector text, or scale content to fit to fill the new size exactly.</p></div>
+<div class="faq-item"><p class="faq-q">How do I add page numbers to every page?</p><p>Use the Header/Footer tab and type "Page {page} of {total}" as footer text. The tokens are replaced on every page automatically.</p></div>
+<div class="faq-item"><p class="faq-q">What is N-up layout?</p><p>N-up puts 2, 4 or 6 source pages onto one sheet, so you can print handouts or save paper.</p></div>
+<div class="faq-item"><p class="faq-q">Is my PDF uploaded to a server?</p><p>No. All five tools run 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device.</p></div>
+</div>
+</main>
+
+<footer>
+<p><a href="https://theeditpdf.com">TheEditPDF</a> — Free PDF tools that run 100% in your browser.</p>
+<p style="margin-top:8px">Proudly built by <a href="https://theeditpdf.com">Khando.dev</a></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script>
+(function(){
+"use strict";
+if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";}
+var PDFLib=window.PDFLib;
+var fileBytes=null,fileName="document.pdf",filePages=0,outBytes=null,outName="output.pdf";
+var $=function(id){return document.getElementById(id);};
+var fmt=function(b){if(b<1024)return b+" B";if(b<1048576)return (b/1024).toFixed(1)+" KB";return (b/1048576).toFixed(2)+" MB";};
+var SIZES={A4:[595.28,841.89],Letter:[612,792],Legal:[612,1008],A5:[419.53,595.28]};
+
+/* ---------- shared upload ---------- */
+var dz=$("dropZone"),fi=$("fileInput");
+dz.addEventListener("click",function(){fi.click();});
+dz.addEventListener("dragover",function(e){e.preventDefault();dz.classList.add("dragover");});
+dz.addEventListener("dragleave",function(){dz.classList.remove("dragover");});
+dz.addEventListener("drop",function(e){e.preventDefault();dz.classList.remove("dragover");if(e.dataTransfer.files.length)handleFile(e.dataTransfer.files[0]);});
+fi.addEventListener("change",function(){if(fi.files.length)handleFile(fi.files[0]);});
+function handleFile(f){
+  if(f.type!=="application/pdf"&&!/\.pdf$/i.test(f.name)){showErrorAll("Please upload a PDF file.");return;}
+  if(f.size>50*1024*1024){showErrorAll("File is larger than the 50MB limit.");return;}
+  var rd=new FileReader();
+  rd.onload=function(){
+    fileBytes=new Uint8Array(rd.result);fileName=f.name.replace(/\.pdf$/i,"");
+    $("fileInfo").style.display="block";
+    $("fileName").textContent=f.name;$("fileSize").textContent=fmt(f.size);
+    document.querySelectorAll(".action-btn").forEach(function(b){b.disabled=false;});
+    document.querySelectorAll(".results").forEach(function(r){r.style.display="none";});
+    document.querySelectorAll(".error").forEach(function(e){e.style.display="none";});
+    PDFLib.PDFDocument.load(fileBytes).then(function(d){filePages=d.getPageCount();$("fileSize").textContent=fmt(f.size)+" · "+filePages+" page"+(filePages>1?"s":"");}).catch(function(){});
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".tab-btn").forEach(function(b){
+  b.addEventListener("click",function(){
+    document.querySelectorAll(".tab-btn").forEach(function(x){x.classList.remove("active");});
+    document.querySelectorAll(".tab-panel").forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");$("panel-"+b.dataset.tab).classList.add("active");
+  });
+});
+
+/* ---------- option buttons ---------- */
+function bindOpts(id,cb){
+  var wrap=$(id);if(!wrap)return;
+  wrap.querySelectorAll(".opt-btn").forEach(function(b){
+    b.addEventListener("click",function(){
+      wrap.querySelectorAll(".opt-btn").forEach(function(x){x.classList.remove("active");});
+      b.classList.add("active");if(cb)cb(b.dataset.v);
+    });
+  });
+}
+bindOpts("grayDpi");bindOpts("nupCount");
+bindOpts("resizeSize",function(v){$("resizeCustom").style.display=(v==="custom")?"flex":"none";});
+
+/* ---------- panel helpers ---------- */
+function panelEls(panel){
+  var p=$("panel-"+panel);
+  return{panel:p,prog:p.querySelector(".progress"),fill:p.querySelector(".progress-fill"),text:p.querySelector(".progress-text"),res:p.querySelector(".results"),resText:p.querySelector(".res-text"),err:p.querySelector(".error"),dl:p.querySelector(".download-btn"),btn:p.querySelector(".action-btn")};
+}
+function setProgress(e,pct,msg){e.prog.style.display="block";e.fill.style.width=pct+"%";e.text.textContent=msg;}
+function showError(e,msg){e.err.style.display="block";e.err.textContent=msg;e.prog.style.display="none";}
+function showErrorAll(msg){document.querySelectorAll(".tab-panel").forEach(function(p){var e=p.querySelector(".error");e.style.display="block";e.textContent=msg;});}
+function showResult(e,msg,bytes,name){
+  outBytes=bytes;outName=name;
+  e.prog.style.display="none";e.res.style.display="block";
+  e.resText.textContent=msg;
+  e.dl.onclick=function(){
+    var blob=new Blob([outBytes],{type:"application/pdf"});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement("a");a.href=url;a.download=outName;
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(function(){URL.revokeObjectURL(url);},30000);
+  };
+}
+function needFile(e){
+  if(!fileBytes){showError(e,"Please upload a PDF first.");return false;}
+  if(!window.PDFLib){showError(e,"PDF engine failed to load. Please reload the page.");return false;}
+  e.err.style.display="none";e.res.style.display="none";
+  return true;
+}
+function baseName(){return fileName||"document";}
+
+/* ---------- pdf.js helpers ---------- */
+function loadPdfJs(){
+  if(!window.pdfjsLib)return Promise.reject(new Error("pdf.js failed to load"));
+  return window.pdfjsLib.getDocument({data:fileBytes}).promise;
+}
+function renderPage(doc,pageNum,dpi){
+  return doc.getPage(pageNum).then(function(page){
+    var scale=dpi/72;
+    var vp=page.getViewport({scale:scale});
+    var cv=document.createElement("canvas");
+    cv.width=Math.floor(vp.width);cv.height=Math.floor(vp.height);
+    var ctx=cv.getContext("2d");
+    return page.render({canvasContext:ctx,viewport:vp}).promise.then(function(){
+      return{canvas:cv,width:cv.width,height:cv.height};
+    });
+  });
+}
+function toGray(canvas){
+  var ctx=canvas.getContext("2d");
+  var img=ctx.getImageData(0,0,canvas.width,canvas.height);
+  var d=img.data;
+  for(var i=0;i<d.length;i+=4){
+    var g=Math.round(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2]);
+    d[i]=g;d[i+1]=g;d[i+2]=g;
+  }
+  ctx.putImageData(img,0,0);
+  return canvas;
+}
+function canvasJpegBytes(canvas){
+  return new Promise(function(resolve){
+    canvas.toBlob(function(blob){
+      var rd=new FileReader();
+      rd.onload=function(){resolve(new Uint8Array(rd.result));};
+      rd.readAsArrayBuffer(blob);
+    },"image/jpeg",0.85);
+  });
+}
+
+/* ---------- 1. GRAYSCALE ---------- */
+function doGrayscale(){
+  var e=panelEls("grayscale");
+  if(!needFile(e))return;
+  e.btn.disabled=true;
+  var dpi=parseInt(document.querySelector("#grayDpi .opt-btn.active").dataset.v,10);
+  setProgress(e,5,"Loading PDF…");
+  var total=0;
+  loadPdfJs().then(function(doc){
+    total=doc.numPages;
+    return PDFLib.PDFDocument.create().then(function(out){
+      var chain=Promise.resolve();
+      for(var i=1;i<=total;i++){
+        (function(pn){
+          chain=chain.then(function(){
+            setProgress(e,Math.round(5+90*(pn-1)/total),"Converting page "+pn+" of "+total+"…");
+            return renderPage(doc,pn,dpi).then(function(r){
+              toGray(r.canvas);
+              return canvasJpegBytes(r.canvas).then(function(jpg){
+                return out.embedJpg(jpg).then(function(img){
+                  var pw=r.width*72/dpi,ph=r.height*72/dpi;
+                  var page=out.addPage([pw,ph]);
+                  page.drawImage(img,{x:0,y:0,width:pw,height:ph});
+                });
+              });
+            });
+          });
+        })(i);
+      }
+      return chain.then(function(){
+        setProgress(e,97,"Saving…");
+        return out.save();
+      });
+    });
+  }).then(function(bytes){
+    showResult(e,"Converted "+total+" page"+(total>1?"s":"")+" to grayscale.",bytes,baseName()+"-grayscale.pdf");
+  }).catch(function(err){
+    showError(e,"Conversion failed: "+(err&&err.message?err.message:err));
+  }).finally(function(){e.btn.disabled=false;});
+}
+
+/* ---------- 2. FLATTEN ---------- */
+function doFlatten(){
+  var e=panelEls("flatten");
+  if(!needFile(e))return;
+  e.btn.disabled=true;
+  setProgress(e,20,"Loading PDF…");
+  PDFLib.PDFDocument.load(fileBytes).then(function(doc){
+    var count=0;
+    try{
+      var form=doc.getForm();
+      var fields=form.getFields();
+      count=fields.length;
+      if(count>0)form.flatten();
+    }catch(err){ /* no form present */ }
+    setProgress(e,70,"Saving…");
+    return doc.save().then(function(bytes){return{bytes:bytes,count:count};});
+  }).then(function(r){
+    if(r.count===0){
+      showResult(e,"No fillable form fields were found — the PDF was saved unchanged (text and layout untouched).",r.bytes,baseName()+"-flattened.pdf");
+    }else{
+      showResult(e,"Flattened "+r.count+" form field"+(r.count>1?"s":"")+" into the page content.",r.bytes,baseName()+"-flattened.pdf");
+    }
+  }).catch(function(err){
+    showError(e,"Flatten failed: "+(err&&err.message?err.message:err));
+  }).finally(function(){e.btn.disabled=false;});
+}
+
+/* ---------- 3. RESIZE ---------- */
+function doResize(){
+  var e=panelEls("resize");
+  if(!needFile(e))return;
+  var sizeKey=document.querySelector("#resizeSize .opt-btn.active").dataset.v;
+  var tw,th;
+  if(sizeKey==="custom"){
+    var wmm=parseFloat($("customW").value),hmm=parseFloat($("customH").value);
+    if(!wmm||!hmm||wmm<10||hmm<10){showError(e,"Enter a valid custom width and height (10–1000 mm).");return;}
+    tw=wmm*72/25.4;th=hmm*72/25.4;
+  }else{
+    tw=SIZES[sizeKey][0];th=SIZES[sizeKey][1];
+  }
+  var mode=document.querySelector('input[name="resizeMode"]:checked').value;
+  e.btn.disabled=true;
+  if(mode==="keep"){
+    setProgress(e,20,"Resizing pages…");
+    PDFLib.PDFDocument.load(fileBytes).then(function(doc){
+      doc.getPages().forEach(function(p){p.setSize(tw,th);});
+      setProgress(e,70,"Saving…");
+      return doc.save();
+    }).then(function(bytes){
+      showResult(e,"All pages resized (content position kept, vector text preserved).",bytes,baseName()+"-resized.pdf");
+    }).catch(function(err){
+      showError(e,"Resize failed: "+(err&&err.message?err.message:err));
+    }).finally(function(){e.btn.disabled=false;});
+  }else{
+    setProgress(e,5,"Loading PDF…");
+    var dpi=150,total=0;
+    loadPdfJs().then(function(doc){
+      total=doc.numPages;
+      return PDFLib.PDFDocument.create().then(function(out){
+        var chain=Promise.resolve();
+        for(var i=1;i<=total;i++){
+          (function(pn){
+            chain=chain.then(function(){
+              setProgress(e,Math.round(5+90*(pn-1)/total),"Scaling page "+pn+" of "+total+"…");
+              return renderPage(doc,pn,dpi).then(function(r){
+                return canvasJpegBytes(r.canvas).then(function(jpg){
+                  return out.embedJpg(jpg).then(function(img){
+                    var page=out.addPage([tw,th]);
+                    page.drawImage(img,{x:0,y:0,width:tw,height:th});
+                  });
+                });
+              });
+            });
+          })(i);
+        }
+        return chain.then(function(){setProgress(e,97,"Saving…");return out.save();});
+      });
+    }).then(function(bytes){
+      showResult(e,"All "+total+" pages scaled to fit the new size.",bytes,baseName()+"-resized.pdf");
+    }).catch(function(err){
+      showError(e,"Resize failed: "+(err&&err.message?err.message:err));
+    }).finally(function(){e.btn.disabled=false;});
+  }
+}
+
+/* ---------- 4. HEADER / FOOTER ---------- */
+function doHeaderFooter(){
+  var e=panelEls("headerfooter");
+  if(!needFile(e))return;
+  var header=$("hfHeader").value.trim(),footer=$("hfFooter").value.trim();
+  if(!header&&!footer){showError(e,"Enter header text, footer text, or both.");return;}
+  var pos=$("hfPos").value;
+  var size=Math.max(6,Math.min(36,parseInt($("hfSize").value,10)||10));
+  var margin=Math.max(10,Math.min(144,parseInt($("hfMargin").value,10)||36));
+  e.btn.disabled=true;
+  setProgress(e,20,"Stamping pages…");
+  PDFLib.PDFDocument.load(fileBytes).then(function(doc){
+    return doc.embedFont(PDFLib.StandardFonts.Helvetica).then(function(font){
+      var pages=doc.getPages(),total=pages.length;
+      var today=new Date().toISOString().slice(0,10);
+      pages.forEach(function(page,idx){
+        var pn=idx+1;
+        var pw=page.getWidth(),ph=page.getHeight();
+        var fill=function(tpl){
+          return tpl.replace(/\{page\}/g,String(pn)).replace(/\{total\}/g,String(total)).replace(/\{date\}/g,today);
+        };
+        var draw=function(text,y){
+          if(!text)return;
+          var w=font.widthOfTextAtSize(text,size);
+          var x=pos==="center"?(pw-w)/2:pos==="right"?pw-margin-w:margin;
+          page.drawText(text,{x:x,y:y,size:size,font:font,color:PDFLib.rgb(0.25,0.25,0.25)});
+        };
+        if(header)draw(fill(header),ph-margin-size);
+        if(footer)draw(fill(footer),margin);
+      });
+      setProgress(e,70,"Saving…");
+      return doc.save();
+    });
+  }).then(function(bytes){
+    showResult(e,"Header/footer applied to all pages.",bytes,baseName()+"-stamped.pdf");
+  }).catch(function(err){
+    showError(e,"Failed: "+(err&&err.message?err.message:err));
+  }).finally(function(){e.btn.disabled=false;});
+}
+
+/* ---------- 5. N-UP ---------- */
+function doNup(){
+  var e=panelEls("nup");
+  if(!needFile(e))return;
+  var per=parseInt(document.querySelector("#nupCount .opt-btn.active").dataset.v,10);
+  var sheet=SIZES[$("nupSheet").value].slice();
+  if($("nupOrient").value==="landscape")sheet.reverse();
+  var sw=sheet[0],sh=sheet[1];
+  var dpi=parseInt($("nupDpi").value,10);
+  var grid=per===2?( $("nupOrient").value==="landscape"?[2,1]:[1,2] ):per===4?[2,2]:( $("nupOrient").value==="landscape"?[3,2]:[2,3] );
+  var cols=grid[0],rows=grid[1];
+  e.btn.disabled=true;
+  setProgress(e,5,"Loading PDF…");
+  var total=0;
+  loadPdfJs().then(function(doc){
+    total=doc.numPages;
+    var margin=36;
+    var cellW=(sw-2*margin)/cols,cellH=(sh-2*margin)/rows;
+    return PDFLib.PDFDocument.create().then(function(out){
+      var chain=Promise.resolve();
+      var sheetCount=Math.ceil(total/per);
+      var sheets=[];
+      for(var s=0;s<sheetCount;s++)sheets.push(out.addPage([sw,sh]));
+      for(var i=1;i<=total;i++){
+        (function(pn){
+          chain=chain.then(function(){
+            setProgress(e,Math.round(5+90*(pn-1)/total),"Placing page "+pn+" of "+total+"…");
+            return renderPage(doc,pn,dpi).then(function(r){
+              return canvasJpegBytes(r.canvas).then(function(jpg){
+                return out.embedJpg(jpg).then(function(img){
+                  var si=Math.floor((pn-1)/per),slot=(pn-1)%per;
+                  var col=slot%cols,row=Math.floor(slot/cols);
+                  var iw=r.width*72/dpi,ih=r.height*72/dpi;
+                  var sc=Math.min(cellW/iw,cellH/ih);
+                  var dw=iw*sc,dh=ih*sc;
+                  var cx=margin+col*cellW+(cellW-dw)/2;
+                  var cy=sh-margin-(row+1)*cellH+(cellH-dh)/2;
+                  sheets[si].drawImage(img,{x:cx,y:cy,width:dw,height:dh});
+                });
+              });
+            });
+          });
+        })(i);
+      }
+      return chain.then(function(){setProgress(e,97,"Saving…");return out.save();});
+    });
+  }).then(function(bytes){
+    showResult(e,"Created "+Math.ceil(total/per)+" sheet"+(Math.ceil(total/per)>1?"s":"")+" with "+per+" pages each from "+total+" source pages.",bytes,baseName()+"-"+per+"up.pdf");
+  }).catch(function(err){
+    showError(e,"N-up failed: "+(err&&err.message?err.message:err));
+  }).finally(function(){e.btn.disabled=false;});
+}
+
+/* ---------- wire action buttons ---------- */
+document.querySelectorAll(".action-btn").forEach(function(b){
+  b.addEventListener("click",function(){
+    var a=b.dataset.action;
+    if(a==="grayscale")doGrayscale();
+    else if(a==="flatten")doFlatten();
+    else if(a==="resize")doResize();
+    else if(a==="headerfooter")doHeaderFooter();
+    else if(a==="nup")doNup();
+  });
+});
+})();
+</script>
+</body>
+</html>
