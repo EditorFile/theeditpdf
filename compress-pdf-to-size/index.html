@@ -76,6 +76,36 @@ footer a{color:var(--gold);text-decoration:none}
 </style>
 </head>
 <body>
+
+<style id="tesw-css">
+header.tesw-bar{position:-webkit-sticky;position:sticky;top:0;z-index:9999;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 20px;margin:0;background:#fdfaf3;border-bottom:1px solid #e8ddc8;box-shadow:0 2px 12px rgba(0,0,0,.06);font-family:Georgia,'Times New Roman',serif;box-sizing:border-box;width:100%}
+.tesw-bar a.tesw-brand{font-size:21px;font-weight:700;color:#1a1a1a;text-decoration:none;letter-spacing:.2px;white-space:nowrap}
+.tesw-bar a.tesw-brand span{color:#b8860b}
+.tesw-wrap{position:relative}
+.tesw-btn{background:#1a1a1a;color:#fff;border:0;border-radius:999px;padding:10px 20px;font-size:15px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit}
+.tesw-btn:hover{background:#b8860b}
+.tesw-panel{position:absolute;right:0;top:calc(100% + 10px);width:min(700px,94vw);max-height:72vh;overflow:auto;background:#fffdf8;border:1px solid #e8ddc8;border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.18);padding:18px;box-sizing:border-box;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif}
+.tesw-panel[hidden]{display:none!important}
+.tesw-panel-head{display:flex;justify-content:space-between;align-items:center;margin:0 0 14px;padding-bottom:10px;border-bottom:1px solid #eee2c8}
+.tesw-panel-head span{font-size:16px;font-weight:700;color:#1a1a1a}
+.tesw-close{background:#f3ead2;border:0;border-radius:50%;width:32px;height:32px;font-size:15px;cursor:pointer;color:#1a1a1a;line-height:1}
+.tesw-close:hover{background:#e8d9ae}
+.tesw-groups{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 22px}
+.tesw-group h4{margin:0 0 8px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#b8860b;border-bottom:2px solid #e8ddc8;padding-bottom:5px}
+.tesw-group a{display:block;padding:7px 10px;border-radius:8px;color:#222;text-decoration:none;font-size:14.5px;line-height:1.35}
+.tesw-group a:hover{background:#f5ecd7}
+.tesw-group a.tesw-current{background:#c9a227!important;color:#fff!important;font-weight:700}
+.tesw-here{display:inline-block;margin-left:8px;font-size:11px;font-weight:600;background:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.6);border-radius:999px;padding:1px 8px;vertical-align:middle}
+@media(max-width:640px){
+  header.tesw-bar{padding:10px 14px}
+  .tesw-bar a.tesw-brand{font-size:18px}
+  .tesw-btn{padding:9px 14px;font-size:14px}
+  .tesw-panel{position:fixed;left:10px;right:10px;top:60px;width:auto;max-height:78vh}
+  .tesw-groups{grid-template-columns:1fr}
+}
+</style>
+<header class="tesw-bar"><a class="tesw-brand" href="https://theeditpdf.com/">The<span>Edit</span>PDF</a><div class="tesw-wrap"><button class="tesw-btn" id="teswBtn" type="button" aria-haspopup="true" aria-expanded="false">All Tools <span aria-hidden="true">▾</span></button><div class="tesw-panel" id="teswPanel" role="menu" hidden><div class="tesw-panel-head"><span>All PDF tools</span><button class="tesw-close" id="teswClose" type="button" aria-label="Close tools menu">✕</button></div><div class="tesw-groups"><div class="tesw-group"><h4>Edit</h4><a href="/pdf-editor">PDF Editor</a><a href="/fill-pdf-form">Fill PDF Form</a><a href="/crop-pdf">Crop PDF</a><a href="/organize-pdf">Organize PDF Pages</a></div><div class="tesw-group"><h4>Combine & Split</h4><a href="/merge-pdf">Merge PDF</a><a href="/split-pdf">Split PDF</a><a href="/split-pdf-by-size">Split by Size</a><a href="/split-pdf-by-bookmarks">Split by Bookmarks</a><a href="/extract-pdf-pages">Extract Pages</a></div><div class="tesw-group"><h4>Compress & Convert</h4><a href="/compress-pdf">Compress PDF</a><a href="/compress-pdf-to-size" class="tesw-current">Compress to Size <span class="tesw-here">You are here</span></a><a href="/pdf-to-jpg">PDF to JPG</a><a href="/pdf-to-png">PDF to PNG</a><a href="/jpg-to-pdf">JPG to PDF</a><a href="/png-to-pdf">PNG to PDF</a><a href="/pdf-to-word">PDF to Word</a><a href="/pdf-to-excel">PDF to Excel</a><a href="/pdf-to-powerpoint">PDF to PowerPoint</a><a href="/pdf-to-text">PDF to Text</a><a href="/excel-to-pdf">Excel to PDF</a></div><div class="tesw-group"><h4>Manage Pages</h4><a href="/delete-pages">Delete Pages</a><a href="/rotate-pdf">Rotate PDF</a><a href="/page-numbers">Page Numbers</a><a href="/watermark-pdf">Watermark PDF</a></div><div class="tesw-group"><h4>Secure & Sign</h4><a href="/sign-pdf">Sign PDF</a><a href="/protect-pdf">Protect PDF</a><a href="/unlock-pdf">Unlock PDF</a><a href="/redact-pdf">Redact PDF</a></div><div class="tesw-group"><h4>Advanced</h4><a href="/ocr-pdf">OCR PDF</a><a href="/compare-pdf">Compare PDF</a><a href="/pdf-repair">PDF Repair</a><a href="/pdf-metadata">PDF Metadata</a><a href="/extract-images-from-pdf">Extract Images</a><a href="/pdf-tools-bundle">PDF Tools Bundle</a></div></div></div></div></header>
+
 <header>
 <a href="https://theeditpdf.com" class="logo">The<span>Edit</span>PDF</a>
 <nav>
@@ -427,6 +457,18 @@ if(window.pdfjsLib){
   window.pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 }
+})();
+</script>
+
+<script id="tesw-js">
+(function(){var b=document.getElementById('teswBtn'),p=document.getElementById('teswPanel'),c=document.getElementById('teswClose');
+if(!b||!p||!c)return;
+function open(){p.hidden=false;b.setAttribute('aria-expanded','true');}
+function close(){p.hidden=true;b.setAttribute('aria-expanded','false');}
+b.addEventListener('click',function(e){e.stopPropagation();if(p.hidden){open();}else{close();}});
+c.addEventListener('click',close);
+document.addEventListener('click',function(e){if(!p.hidden&&!p.contains(e.target)&&e.target!==b){close();}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();}});
 })();
 </script>
 </body>
