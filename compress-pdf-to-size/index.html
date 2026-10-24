@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compress PDF to 100KB, 200KB Online Free | TheEditPDF</title>
+<meta name="description" content="Compress PDF to exactly 100KB, 200KB, 500KB or 1MB online free. Shrink your PDF to a target file size in your browser — no signup, no watermark, files never leave your device.">
+<meta name="keywords" content="compress pdf to 100kb, compress pdf to 200kb, compress pdf to 1mb, reduce pdf size, shrink pdf online free">
+<link rel="canonical" href="https://theeditpdf.com/compress-pdf-to-size">
+<meta property="og:title" content="Compress PDF to 100KB, 200KB Online Free | TheEditPDF">
+<meta property="og:description" content="Shrink your PDF to an exact target size — 100KB, 200KB, 500KB or 1MB. 100% free, in-browser, no signup.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Compress PDF to Exact Size","url":"https://theeditpdf.com/compress-pdf-to-size","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I compress a PDF to exactly 100KB?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, select 100KB as the target size, and click Compress. The tool iteratively reduces image quality until the file fits under 100KB, then lets you download the result."}},
+{"@type":"Question","name":"Will compressing to 100KB ruin my PDF quality?","acceptedAnswer":{"@type":"Answer","text":"Smaller targets mean more compression. Text-heavy PDFs compress well with little visible loss. Image-heavy PDFs at 100KB will show softer images. Try 200KB or 500KB if quality matters more than size."}},
+{"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. All compression runs 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device."}},
+{"@type":"Question","name":"What if my PDF cannot reach the target size?","acceptedAnswer":{"@type":"Answer","text":"The tool tries progressively stronger compression and reports the smallest size it achieved. If even maximum compression exceeds your target, it shows the best result and suggests a larger target."}},
+{"@type":"Question","name":"Can I compress a PDF to a custom size?","acceptedAnswer":{"@type":"Answer","text":"Yes. Choose Custom and enter any size in KB — for example 150KB, 300KB, or 750KB."}}
+]}
+</script>
+<style>
+:root{--ivory:#faf7f0;--charcoal:#1a1a1a;--gold:#a67c2e;--gold-light:#c9a96e;--line:#e5ddd0;--muted:#666}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:var(--ivory);color:var(--charcoal);line-height:1.6}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.logo{font-size:1.4rem;font-weight:700;text-decoration:none;color:var(--charcoal)}
+.logo span{color:var(--gold)}
+nav a{margin-left:20px;text-decoration:none;color:var(--charcoal);font-size:.95rem}
+nav a:hover{color:var(--gold)}
+main{max-width:860px;margin:0 auto;padding:40px 20px}
+h1{font-size:2.2rem;text-align:center;margin-bottom:8px}
+.subtitle{text-align:center;color:var(--muted);font-size:1.05rem;margin-bottom:32px}
+.tool-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:32px;box-shadow:0 4px 24px rgba(0,0,0,.06)}
+.drop-zone{border:2px dashed var(--line);border-radius:12px;padding:48px 24px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--gold);background:#fdf9f0}
+.drop-zone .icon{font-size:3rem;margin-bottom:12px}
+.drop-zone p{color:var(--muted)}
+.drop-zone input{display:none}
+.file-info{display:none;margin-top:20px;padding:16px;background:#f9f6f0;border-radius:8px}
+.file-info strong{display:block;font-size:1.05rem}
+.file-info span{color:var(--muted);font-size:.9rem}
+.size-picker{margin-top:24px}
+.size-picker label{font-weight:700;display:block;margin-bottom:12px}
+.size-options{display:flex;flex-wrap:wrap;gap:10px}
+.size-btn{padding:12px 20px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;font-size:1rem;transition:.15s}
+.size-btn:hover{border-color:var(--gold)}
+.size-btn.active{border-color:var(--gold);background:#fdf6e3;font-weight:700}
+.custom-size{display:none;margin-top:12px;align-items:center;gap:8px}
+.custom-size input{padding:10px 12px;border:2px solid var(--line);border-radius:8px;font-size:1rem;width:120px;font-family:inherit}
+.compress-btn{display:block;width:100%;margin-top:28px;padding:16px;background:var(--gold);color:#fff;border:none;border-radius:12px;font-size:1.15rem;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.compress-btn:hover{background:#8a6a28}
+.compress-btn:disabled{opacity:.5;cursor:not-allowed}
+.progress{display:none;margin-top:24px}
+.progress-bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--gold);width:0%;transition:width .3s}
+.progress-text{text-align:center;margin-top:8px;color:var(--muted);font-size:.9rem}
+.results{display:none;margin-top:24px;padding:20px;background:#f0f7ee;border:1px solid #c8e6c9;border-radius:12px}
+.results h3{margin-bottom:12px}
+.size-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e0e0e0}
+.size-row:last-child{border:none}
+.size-row .savings{color:#2e7d32;font-weight:700}
+.download-btn{display:block;width:100%;margin-top:16px;padding:14px;background:#2e7d32;color:#fff;border:none;border-radius:10px;font-size:1.1rem;font-weight:700;cursor:pointer;font-family:inherit}
+.download-btn:hover{background:#1b5e20}
+.error{display:none;margin-top:16px;padding:14px;background:#fde8e8;border:1px solid #f5c6c6;border-radius:8px;color:#c62828}
+.faq{margin-top:48px}
+.faq h2{font-size:1.5rem;margin-bottom:20px}
+.faq-item{margin-bottom:16px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px}
+.faq-q{font-weight:700;margin-bottom:6px}
+footer{text-align:center;padding:32px 20px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:48px}
+footer a{color:var(--gold);text-decoration:none}
+@media(max-width:600px){h1{font-size:1.6rem}.tool-card{padding:20px}.drop-zone{padding:32px 16px}}
+</style>
+</head>
+<body>
+<header>
+<a href="https://theeditpdf.com" class="logo">The<span>Edit</span>PDF</a>
+<nav>
+<a href="https://theeditpdf.com">All Tools</a>
+<a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>
+<a href="https://theeditpdf.com/compress-pdf">Compress PDF</a>
+</nav>
+</header>
+
+<main>
+<h1>Compress PDF to 100KB, 200KB Online Free</h1>
+<p class="subtitle">Shrink your PDF to an exact target size. 100% free, in your browser — no signup, no watermark, files never leave your device.</p>
+
+<div class="tool-card">
+<div class="drop-zone" id="dropZone">
+<div class="icon">📄</div>
+<p><strong>Drop your PDF here</strong> or click to browse</p>
+<p style="margin-top:8px;font-size:.85rem">Max 50MB · Works on any device</p>
+<input type="file" id="fileInput" accept="application/pdf">
+</div>
+
+<div class="file-info" id="fileInfo">
+<strong id="fileName"></strong>
+<span id="fileSize"></span>
+</div>
+
+<div class="size-picker">
+<label>Choose target size:</label>
+<div class="size-options">
+<button class="size-btn active" data-size="100">100 KB</button>
+<button class="size-btn" data-size="200">200 KB</button>
+<button class="size-btn" data-size="500">500 KB</button>
+<button class="size-btn" data-size="1024">1 MB</button>
+<button class="size-btn" data-size="custom">Custom</button>
+</div>
+<div class="custom-size" id="customSize">
+<input type="number" id="customKB" min="10" max="51200" placeholder="e.g. 150" value="150">
+<span>KB</span>
+</div>
+</div>
+
+<button class="compress-btn" id="compressBtn" disabled>Compress PDF</button>
+
+<div class="progress" id="progress">
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+<div class="progress-text" id="progressText">Starting…</div>
+</div>
+
+<div class="error" id="errorBox"></div>
+
+<div class="results" id="results">
+<h3>✅ Compression Complete</h3>
+<div class="size-row"><span>Original size</span><strong id="origSize"></strong></div>
+<div class="size-row"><span>Target size</span><strong id="targetSize"></strong></div>
+<div class="size-row"><span>Result size</span><strong id="resultSize"></strong></div>
+<div class="size-row"><span>You saved</span><strong class="savings" id="savedSize"></strong></div>
+<button class="download-btn" id="downloadBtn">⬇️ Download Compressed PDF</button>
+</div>
+</div>
+
+<div class="faq">
+<h2>Frequently Asked Questions</h2>
+<div class="faq-item">
+<p class="faq-q">How do I compress a PDF to exactly 100KB?</p>
+<p>Upload your PDF, select 100KB as the target size, and click Compress. The tool iteratively reduces image quality until the file fits under 100KB, then lets you download the result.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Will compressing to 100KB ruin my PDF quality?</p>
+<p>Smaller targets mean more compression. Text-heavy PDFs compress well with little visible loss. Image-heavy PDFs at 100KB will show softer images. Try 200KB or 500KB if quality matters more than size.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Is my PDF uploaded to a server?</p>
+<p>No. All compression runs 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">What if my PDF cannot reach the target size?</p>
+<p>The tool tries progressively stronger compression and reports the smallest size it achieved. If even maximum compression exceeds your target, it shows the best result and suggests a larger target.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Can I compress a PDF to a custom size?</p>
+<p>Yes. Choose Custom and enter any size in KB — for example 150KB, 300KB, or 750KB.</p>
+</div>
+</div>
+</main>
+
+<footer>
+<p>Proudly built by <a href="https://khando.dev">Khando.dev</a></p>
+<p style="margin-top:8px">100% free · No signup · Files never leave your device</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+(function(){
+'use strict';
+// --- State ---
+var selectedFile = null;
+var selectedBytes = null;
+var targetKB = 100;
+var compressedBlob = null;
+var compressedName = '';
+
+// --- DOM ---
+var dropZone = document.getElementById('dropZone');
+var fileInput = document.getElementById('fileInput');
+var fileInfo = document.getElementById('fileInfo');
+var fileNameEl = document.getElementById('fileName');
+var fileSizeEl = document.getElementById('fileSize');
+var compressBtn = document.getElementById('compressBtn');
+var progressEl = document.getElementById('progress');
+var progressFill = document.getElementById('progressFill');
+var progressText = document.getElementById('progressText');
+var errorBox = document.getElementById('errorBox');
+var resultsEl = document.getElementById('results');
+var downloadBtn = document.getElementById('downloadBtn');
+var customSizeEl = document.getElementById('customSize');
+var customKBInput = document.getElementById('customKB');
+
+// --- Helpers ---
+function fmt(bytes){
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(2) + ' MB';
+}
+function showError(msg){
+  errorBox.textContent = msg;
+  errorBox.style.display = 'block';
+}
+function hideError(){ errorBox.style.display = 'none'; }
+function setProgress(pct, text){
+  progressFill.style.width = pct + '%';
+  progressText.textContent = text;
+}
+
+// --- File selection ---
+dropZone.addEventListener('click', function(){ fileInput.click(); });
+dropZone.addEventListener('dragover', function(e){ e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', function(){ dropZone.classList.remove('dragover'); });
+dropZone.addEventListener('drop', function(e){
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', function(){
+  if(fileInput.files.length) handleFile(fileInput.files[0]);
+  fileInput.value = '';
+});
+
+function handleFile(file){
+  if(file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')){
+    showError('Please select a PDF file.');
+    return;
+  }
+  if(file.size > 50*1024*1024){
+    showError('File is too large (max 50MB).');
+    return;
+  }
+  selectedFile = file;
+  hideError();
+  resultsEl.style.display = 'none';
+  fileNameEl.textContent = '📄 ' + file.name;
+  fileSizeEl.textContent = 'Original size: ' + fmt(file.size);
+  fileInfo.style.display = 'block';
+  compressBtn.disabled = false;
+  var reader = new FileReader();
+  reader.onload = function(){ selectedBytes = new Uint8Array(reader.result); };
+  reader.readAsArrayBuffer(file);
+}
+
+// --- Size picker ---
+document.querySelectorAll('.size-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.size-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    var sz = btn.getAttribute('data-size');
+    if(sz === 'custom'){
+      customSizeEl.style.display = 'flex';
+      targetKB = parseInt(customKBInput.value, 10) || 150;
+    } else {
+      customSizeEl.style.display = 'none';
+      targetKB = parseInt(sz, 10);
+    }
+  });
+});
+customKBInput.addEventListener('input', function(){
+  targetKB = parseInt(customKBInput.value, 10) || 150;
+});
+
+// --- Compression engine ---
+// Strategy: iterative quality reduction.
+// Level 0: pdf-lib copy + metadata strip (lossless-ish).
+// Levels 1-5: rasterize pages at decreasing DPI via pdf.js, rebuild as image-only PDF.
+// Each level produces a candidate; we stop at the first one under target.
+// If none fits, we return the smallest candidate.
+async function compressToTarget(srcBytes, targetBytes, onProgress){
+  var PDFLib = window.PDFLib;
+  var pdfjsLib = window.pdfjsLib;
+  if(!PDFLib) throw new Error('PDF engine failed to load. Check your connection and try again.');
+  
+  // Level 0: lossless copy + metadata strip
+  onProgress(10, 'Trying lossless compression…');
+  try {
+    var srcDoc = await PDFLib.PDFDocument.load(srcBytes.slice());
+    srcDoc.setTitle('');
+    srcDoc.setAuthor('');
+    srcDoc.setSubject('');
+    srcDoc.setKeywords([]);
+    srcDoc.setProducer('TheEditPDF');
+    srcDoc.setCreator('TheEditPDF');
+    var out0 = await srcDoc.save();
+    if(out0.length <= targetBytes){
+      return { bytes: out0, level: 0, quality: 'lossless' };
+    }
+    // Keep as fallback candidate
+    var best = { bytes: out0, level: 0, quality: 'lossless' };
+    
+    // Levels 1-5: rasterize at decreasing DPI
+    if(!pdfjsLib) return best;
+    var levels = [
+      { dpi: 200, jpeg: 0.85, label: 'High quality' },
+      { dpi: 150, jpeg: 0.75, label: 'Balanced' },
+      { dpi: 120, jpeg: 0.65, label: 'Compact' },
+      { dpi: 96,  jpeg: 0.50, label: 'Small' },
+      { dpi: 72,  jpeg: 0.35, label: 'Smallest' }
+    ];
+    var pdfDoc = await pdfjsLib.getDocument({ data: srcBytes.slice() }).promise;
+    var numPages = pdfDoc.numPages;
+    
+    for(var li = 0; li < levels.length; li++){
+      var lv = levels[li];
+      onProgress(15 + Math.round((li / levels.length) * 75),
+        'Trying ' + lv.label + ' (DPI ' + lv.dpi + ')…');
+      try {
+        var newDoc = await PDFLib.PDFDocument.create();
+        for(var p = 1; p <= numPages; p++){
+          var page = await pdfDoc.getPage(p);
+          var vp = page.getViewport({ scale: lv.dpi / 72 });
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(vp.width);
+          canvas.height = Math.round(vp.height);
+          var ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          var dataUrl = canvas.toDataURL('image/jpeg', lv.jpeg);
+          var imgBytes = dataUrlToBytes(dataUrl);
+          var img = await newDoc.embedJpg(imgBytes);
+          var pg = newDoc.addPage([vp.width, vp.height]);
+          pg.drawImage(img, { x: 0, y: 0, width: vp.width, height: vp.height });
+          page.cleanup();
+        }
+        var out = await newDoc.save();
+        if(out.length < best.bytes.length) best = { bytes: out, level: li + 1, quality: lv.label };
+        if(out.length <= targetBytes){
+          return { bytes: out, level: li + 1, quality: lv.label };
+        }
+      } catch(e) {
+        // Skip this level on error, try next
+        continue;
+      }
+    }
+    return best;
+  } catch(e) {
+    throw new Error('Compression failed: ' + (e.message || e));
+  }
+}
+
+function dataUrlToBytes(dataUrl){
+  var base64 = dataUrl.split(',')[1];
+  var binary = atob(base64);
+  var len = binary.length;
+  var arr = new Uint8Array(len);
+  for(var i = 0; i < len; i++) arr[i] = binary.charCodeAt(i);
+  return arr;
+}
+
+// --- Compress button ---
+compressBtn.addEventListener('click', async function(){
+  if(!selectedBytes || !selectedFile){
+    showError('Please select a PDF first.');
+    return;
+  }
+  var targetBytes = targetKB * 1024;
+  if(selectedBytes.length <= targetBytes){
+    showError('This PDF (' + fmt(selectedBytes.length) + ') is already under ' + fmt(targetBytes) + '. No compression needed!');
+    return;
+  }
+  hideError();
+  resultsEl.style.display = 'none';
+  compressBtn.disabled = true;
+  compressBtn.textContent = 'Compressing…';
+  progressEl.style.display = 'block';
+  setProgress(5, 'Loading PDF…');
+  
+  try {
+    var result = await compressToTarget(selectedBytes, targetBytes, setProgress);
+    setProgress(100, 'Done!');
+    compressedBlob = new Blob([result.bytes], { type: 'application/pdf' });
+    var origName = selectedFile.name.replace(/\.pdf$/i, '');
+    compressedName = origName + '-compressed-' + targetKB + 'kb.pdf';
+    
+    document.getElementById('origSize').textContent = fmt(selectedBytes.length);
+    document.getElementById('targetSize').textContent = fmt(targetBytes);
+    document.getElementById('resultSize').textContent = fmt(result.bytes.length);
+    var saved = selectedBytes.length - result.bytes.length;
+    var pct = Math.round((saved / selectedBytes.length) * 100);
+    document.getElementById('savedSize').textContent = fmt(saved) + ' (' + pct + '%)';
+    
+    if(result.bytes.length > targetBytes){
+      // Add a note that target wasn't fully reached
+      var note = document.createElement('p');
+      note.style.cssText = 'margin-top:12px;color:#e65100;font-size:.9rem;';
+      note.textContent = 'Note: Even maximum compression could not reach ' + fmt(targetBytes) + '. This is the smallest achievable size (' + result.quality + '). Try a larger target for better quality.';
+      // Remove old note if any
+      var oldNote = resultsEl.querySelector('.target-note');
+      if(oldNote) oldNote.remove();
+      note.className = 'target-note';
+      resultsEl.appendChild(note);
+    } else {
+      var oldNote2 = resultsEl.querySelector('.target-note');
+      if(oldNote2) oldNote2.remove();
+    }
+    
+    resultsEl.style.display = 'block';
+    progressEl.style.display = 'none';
+  } catch(e) {
+    showError(e.message || 'Compression failed. Please try again.');
+    progressEl.style.display = 'none';
+  } finally {
+    compressBtn.disabled = false;
+    compressBtn.textContent = 'Compress PDF';
+  }
+});
+
+// --- Download ---
+downloadBtn.addEventListener('click', function(){
+  if(!compressedBlob) return;
+  var a = document.createElement('a');
+  var url = URL.createObjectURL(compressedBlob);
+  a.href = url;
+  a.download = compressedName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 30000);
+});
+
+// --- pdf.js worker ---
+if(window.pdfjsLib){
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+}
+})();
+</script>
+</body>
+</html>
