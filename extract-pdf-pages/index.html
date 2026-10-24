@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extract PDF Pages Online Free | TheEditPDF</title>
+<meta name="description" content="Extract pages from a PDF into a new file — pick pages by range (e.g. 1-3, 5, 7-9) or click page thumbnails. Free, no signup, 100% private: files never leave your device.">
+<meta name="keywords" content="extract pdf pages, extract pages from pdf, pdf page extractor, save selected pdf pages, extract pdf pages online free">
+<link rel="canonical" href="https://theeditpdf.com/extract-pdf-pages">
+<meta property="og:title" content="Extract PDF Pages Online Free | TheEditPDF">
+<meta property="og:description" content="Pull selected pages out of a PDF into a brand-new file. Pick by range or click thumbnails — free, private, no signup, everything runs in your browser.">
+<meta property="og:type" content="website">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"Extract PDF Pages — TheEditPDF","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Extract selected pages from a PDF into a new file. Pick pages by range or click thumbnails. Free, no signup, files never leave your device."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I extract pages from a PDF?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, type the pages you want (for example 1-3, 5, 7-9) or click the page thumbnails to select them, then click Extract & Download. You get a new PDF containing only those pages, in document order."}},
+{"@type":"Question","name":"Can I extract non-consecutive pages?","acceptedAnswer":{"@type":"Answer","text":"Yes. Enter comma-separated pages and ranges, such as 1, 4-6, 9. Duplicates are removed automatically and pages are extracted in document order."}},
+{"@type":"Question","name":"Does extracting pages reduce quality?","acceptedAnswer":{"@type":"Answer","text":"No. Pages are copied losslessly with pdf-lib, so fonts, images and vector content are identical to the original."}},
+{"@type":"Question","name":"Is my PDF uploaded anywhere?","acceptedAnswer":{"@type":"Answer","text":"No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device."}},
+{"@type":"Question","name":"What if I type a page number that does not exist?","acceptedAnswer":{"@type":"Answer","text":"The tool checks your selection against the document's page count and tells you exactly which entries are out of range, so you can fix them before extracting."}}
+]}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--ivory);color:var(--ink);line-height:1.55}
+a{color:var(--gold-d)}
+header.top{max-width:1080px;margin:0 auto;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.logo{font-family:Georgia,serif;font-size:1.5rem;font-weight:700;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--gold)}
+.top nav a{margin-left:16px;text-decoration:none;color:var(--ink);font-weight:600}
+.badges{max-width:1080px;margin:0 auto;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px}
+.badge{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.85rem;font-weight:600}
+main{max-width:1080px;margin:0 auto;padding:20px}
+h1{font-family:Georgia,serif;font-size:2.2rem;line-height:1.2;margin:14px 0 6px}
+h2{font-family:Georgia,serif;font-size:1.5rem;margin:32px 0 10px}
+h3{font-size:1.05rem;margin:18px 0 6px}
+.lead{color:#3d463f;font-size:1.08rem;max-width:720px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:0 10px 30px rgba(166,124,46,.10);margin-top:22px}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:36px 20px;text-align:center;cursor:pointer;background:#fff}
+.drop:hover,.drop.over{border-color:var(--gold);background:#fffaf0}
+.drop b{font-size:1.1rem}
+.drop p{color:var(--muted);margin:6px 0 0}
+.drop input{display:none}
+.fileinfo{margin-top:14px;font-weight:600}
+.rangelabel{display:block;font-weight:700;margin:20px 0 6px}
+.rangeinput{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font-size:1.05rem;background:#fff}
+.rangeinput:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+.hint{color:var(--muted);font-size:.9rem;margin-top:6px}
+.selbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.selcount{font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;max-height:340px;overflow:auto;padding:4px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px 8px;cursor:pointer;min-width:64px;text-align:center;transition:all .12s}
+.chip:hover{border-color:var(--gold)}
+.chip .pg{font-weight:700;font-size:.9rem;display:block}
+.chip canvas{display:block;margin:0 auto 4px;max-width:56px;height:auto;border-radius:4px;background:#fff}
+.chip.selected{border-color:var(--gold);background:#fff7e0;box-shadow:0 0 0 2px rgba(166,124,46,.35)}
+.chip.selected .pg{color:var(--gold-d)}
+.btn{display:inline-block;background:var(--gold);color:#fff!important;border:0;border-radius:12px;padding:14px 28px;font-size:1.02rem;font-weight:700;cursor:pointer;box-shadow:0 10px 24px rgba(166,124,46,.35);text-decoration:none}
+.btn:hover{background:var(--gold-d)}
+.btn:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+.btn.secondary{background:#fff;color:var(--ink)!important;border:1px solid var(--line);box-shadow:none}
+.btn.small{padding:9px 16px;font-size:.9rem;border-radius:10px}
+.actions{margin-top:18px;display:flex;gap:10px;flex-wrap:wrap}
+.progress{margin-top:16px;font-weight:600;color:#3d463f;min-height:1.5em}
+.progressbar{height:8px;background:#f0e8d6;border-radius:99px;overflow:hidden;margin-top:6px;display:none}
+.progressbar i{display:block;height:100%;background:var(--gold);width:0%}
+.results{margin-top:22px;display:none}
+.note{background:#fff7e0;border:1px solid #f0dfae;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem}
+.err{background:#fdf0f0;border:1px solid #f0c0c0;color:#9b1c1c;border-radius:12px;padding:12px 16px;margin-top:16px;font-size:.95rem;display:none}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.step{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px}
+.step b{font-family:Georgia,serif;font-size:1.4rem;color:var(--gold)}
+.faq details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin:10px 0}
+.faq summary{font-weight:700;cursor:pointer}
+.pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:14px}
+.pillar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.pillar b{font-size:1.05rem}
+footer{max-width:1080px;margin:0 auto;padding:26px 20px 40px;color:var(--muted);font-size:.9rem;text-align:center}
+footer a{color:var(--muted)}
+@media(max-width:640px){h1{font-size:1.7rem}.card{padding:18px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="logo" href="https://theeditpdf.com">The<span>Edit</span>PDF</a>
+  <nav><a href="https://theeditpdf.com/pdf-editor">Edit a PDF — it's free</a><a href="https://theeditpdf.com/split-pdf">Split PDF</a></nav>
+</header>
+<div class="badges">
+  <span class="badge">🔒 100% Private — files never leave your device</span>
+  <span class="badge">🆓 Free Forever — no limits</span>
+  <span class="badge">⚡ No Signup — start instantly</span>
+</div>
+<main>
+  <h1>Extract PDF Pages</h1>
+  <p class="lead">Pull selected pages out of a PDF into a brand-new file. Type a page range (e.g. 1-3, 5, 7-9) or click the page thumbnails to pick them — free, with no signup, and your file never leaves your device.</p>
+
+  <section class="card" aria-label="Extract PDF pages tool">
+    <div class="drop" id="dropZone" tabindex="0" role="button" aria-label="Choose a PDF file">
+      <b>📄 Choose a PDF file</b>
+      <p>or drag &amp; drop it here — processed on your device, nothing is uploaded</p>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf">
+    </div>
+    <div class="fileinfo" id="fileInfo"></div>
+
+    <div id="pickerArea" style="display:none">
+      <label class="rangelabel" for="rangeInput">Pages to extract</label>
+      <input type="text" class="rangeinput" id="rangeInput" placeholder="e.g. 1-3, 5, 7-9" autocomplete="off" inputmode="text">
+      <p class="hint">Use commas to separate pages and dashes for ranges. Example: <b>1-3, 5, 7-9</b> extracts pages 1, 2, 3, 5, 7, 8 and 9. Duplicates are removed and pages come out in document order.</p>
+
+      <div class="selbar">
+        <span class="selcount" id="selCount">No pages selected yet</span>
+        <button type="button" class="btn secondary small" id="selectAllBtn">Select all</button>
+        <button type="button" class="btn secondary small" id="clearBtn">Clear</button>
+      </div>
+      <div class="chips" id="chips" role="group" aria-label="Page thumbnails — click to select"></div>
+      <p class="hint" id="thumbNote" style="display:none">Rendering thumbnails…</p>
+
+      <div class="actions">
+        <button class="btn" id="extractBtn" disabled>📤 Extract &amp; Download</button>
+        <button class="btn secondary" id="resetBtn">Start over</button>
+      </div>
+    </div>
+
+    <div class="progress" id="progress"></div>
+    <div class="progressbar" id="progressbar"><i id="progressFill"></i></div>
+    <div class="err" id="errorBox" role="alert"></div>
+
+    <div class="results" id="results">
+      <h3 id="resultsTitle">Your extracted PDF is ready</h3>
+      <p id="resultsInfo"></p>
+      <div class="actions">
+        <button class="btn" id="downloadBtn">⬇ Download extracted PDF</button>
+        <button class="btn secondary" id="againBtn">Extract different pages</button>
+      </div>
+    </div>
+    <div class="note">Tip: need every page as its own file instead? Use <a href="https://theeditpdf.com/split-pdf">Split PDF</a>. Need to remove pages and keep the rest? Use <a href="https://theeditpdf.com/delete-pages">Delete Pages</a>.</div>
+  </section>
+
+  <h2>How to extract pages from a PDF</h2>
+  <div class="steps">
+    <div class="step"><b>01</b><p><strong>Choose your PDF.</strong> Page thumbnails appear below the upload area.</p></div>
+    <div class="step"><b>02</b><p><strong>Pick your pages.</strong> Type a range like 1-3, 5, 7-9, or click thumbnails to select them.</p></div>
+    <div class="step"><b>03</b><p><strong>Click Extract &amp; Download.</strong> You get a new PDF with only those pages — same quality as the original.</p></div>
+  </div>
+
+  <h2>When is extracting pages useful?</h2>
+  <p>Extracting shines whenever only part of a document needs to go somewhere else: sending one signed page back to a client, pulling a single chapter out of a long report, isolating an invoice from a multi-invoice file, or saving one form from a scanned batch. Because pages are copied losslessly, fonts, images and vector graphics are identical to the source — nothing is re-rendered or recompressed.</p>
+
+  <h2>Frequently asked questions</h2>
+  <div class="faq">
+    <details><summary>How do I extract pages from a PDF?</summary><p>Upload your PDF, type the pages you want (for example 1-3, 5, 7-9) or click the page thumbnails to select them, then click Extract &amp; Download. You get a new PDF containing only those pages, in document order.</p></details>
+    <details><summary>Can I extract non-consecutive pages?</summary><p>Yes. Enter comma-separated pages and ranges, such as 1, 4-6, 9. Duplicates are removed automatically and pages are extracted in document order.</p></details>
+    <details><summary>Does extracting pages reduce quality?</summary><p>No. Pages are copied losslessly with pdf-lib, so fonts, images and vector content are identical to the original.</p></details>
+    <details><summary>Is my PDF uploaded anywhere?</summary><p>No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device.</p></details>
+    <details><summary>What if I type a page number that does not exist?</summary><p>The tool checks your selection against the document's page count and tells you exactly which entries are out of range, so you can fix them before extracting.</p></details>
+  </div>
+
+  <h2>Why TheEditPDF?</h2>
+  <div class="pillars">
+    <div class="pillar"><b>🔒 100% Private</b><p>Every tool runs entirely in your browser. Your files never leave your device — ideal for confidential legal, financial and business documents.</p></div>
+    <div class="pillar"><b>🆓 Free &amp; Unlimited</b><p>All tools free forever. No signup, no watermark, no hidden limits. What you see is what you get.</p></div>
+    <div class="pillar"><b>⚡ Nothing to Install</b><p>Works on phone, tablet and computer. Open your browser and start.</p></div>
+  </div>
+  <p style="color:var(--muted);font-size:.9rem;margin-top:20px">Files are processed on your device — nothing is uploaded.</p>
+</main>
+<footer>
+  <p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
+</footer>
+<script>
+(function(){
+"use strict";
+var fileInput=document.getElementById("fileInput"),
+    dropZone=document.getElementById("dropZone"),
+    fileInfo=document.getElementById("fileInfo"),
+    pickerArea=document.getElementById("pickerArea"),
+    rangeInput=document.getElementById("rangeInput"),
+    selCount=document.getElementById("selCount"),
+    chipsBox=document.getElementById("chips"),
+    thumbNote=document.getElementById("thumbNote"),
+    selectAllBtn=document.getElementById("selectAllBtn"),
+    clearBtn=document.getElementById("clearBtn"),
+    extractBtn=document.getElementById("extractBtn"),
+    resetBtn=document.getElementById("resetBtn"),
+    progress=document.getElementById("progress"),
+    progressbar=document.getElementById("progressbar"),
+    progressFill=document.getElementById("progressFill"),
+    errorBox=document.getElementById("errorBox"),
+    results=document.getElementById("results"),
+    resultsTitle=document.getElementById("resultsTitle"),
+    resultsInfo=document.getElementById("resultsInfo"),
+    downloadBtn=document.getElementById("downloadBtn"),
+    againBtn=document.getElementById("againBtn"),
+    srcBytes=null,
+    srcName="document.pdf",
+    totalPages=0,
+    selected=new Set(),
+    outBlob=null,
+    outName="extracted.pdf",
+    suppressRangeSync=false;
+
+function fmt(bytes){
+  if(bytes>=1048576)return (bytes/1048576).toFixed(2)+" MB";
+  if(bytes>=1024)return (bytes/1024).toFixed(1)+" KB";
+  return bytes+" B";
+}
+function baseName(name){
+  return name.replace(/\.pdf$/i,"")||"document";
+}
+function setProgress(msg,pct){
+  progress.textContent=msg||"";
+  if(typeof pct==="number"){
+    progressbar.style.display="block";
+    progressFill.style.width=pct+"%";
+  }else{
+    progressbar.style.display="none";
+    progressFill.style.width="0%";
+  }
+}
+function showError(msg){
+  errorBox.textContent=msg;
+  errorBox.style.display=msg?"block":"none";
+}
+function downloadBlob(blob,name){
+  var url=URL.createObjectURL(blob),
+      a=document.createElement("a");
+  a.href=url;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}a.remove();},30000);
+}
+
+/* Parse "1-3, 5, 7-9" into a sorted unique array of 1-based page numbers.
+   Returns {pages:[...]} or {error:"..."} — never throws on bad input. */
+function parseRange(str,total){
+  var raw=(str||"").trim();
+  if(!raw)return {pages:[]};
+  var parts=raw.split(","),
+      out=new Set(),
+      bad=[];
+  for(var i=0;i<parts.length;i++){
+    var token=parts[i].trim();
+    if(!token)continue;
+    var m=token.match(/^(\d+)\s*-\s*(\d+)$/);
+    if(m){
+      var a=parseInt(m[1],10),b=parseInt(m[2],10);
+      if(a>b){bad.push(token+" (start is after end)");continue;}
+      for(var p=a;p<=b;p++){
+        if(p<1||p>total)bad.push(String(p)+" (out of range)");
+        else out.add(p);
+      }
+    }else if(/^\d+$/.test(token)){
+      var n=parseInt(token,10);
+      if(n<1||n>total)bad.push(token+" (out of range)");
+      else out.add(n);
+    }else{
+      bad.push(token+" (not a page or range)");
+    }
+  }
+  if(bad.length)return {error:"Fix these entries: "+bad.slice(0,8).join(", ")+(bad.length>8?" — and "+(bad.length-8)+" more":"")};
+  var pages=Array.from(out).sort(function(x,y){return x-y;});
+  return {pages:pages};
+}
+
+/* Compress a sorted page list back to "1-3, 5, 7-9" form. */
+function formatRange(pages){
+  if(!pages.length)return "";
+  var sorted=pages.slice().sort(function(a,b){return a-b;}),
+      parts=[],start=sorted[0],prev=sorted[0];
+  for(var i=1;i<sorted.length;i++){
+    if(sorted[i]===prev+1){prev=sorted[i];continue;}
+    parts.push(start===prev?String(start):(start+"-"+prev));
+    start=prev=sorted[i];
+  }
+  parts.push(start===prev?String(start):(start+"-"+prev));
+  return parts.join(", ");
+}
+
+function refreshSelectionUI(){
+  var pages=Array.from(selected).sort(function(a,b){return a-b;});
+  selCount.textContent=pages.length
+    ? pages.length+" page"+(pages.length===1?"":"s")+" selected: "+formatRange(pages)
+    : "No pages selected yet";
+  var chips=chipsBox.querySelectorAll(".chip");
+  chips.forEach(function(chip){
+    var n=parseInt(chip.getAttribute("data-page"),10);
+    chip.classList.toggle("selected",selected.has(n));
+    chip.setAttribute("aria-pressed",selected.has(n)?"true":"false");
+  });
+  extractBtn.disabled=pages.length===0;
+  if(!suppressRangeSync)rangeInput.value=formatRange(pages);
+}
+
+function syncFromRangeInput(){
+  suppressRangeSync=true;
+  var res=parseRange(rangeInput.value,totalPages);
+  if(res.error){
+    showError(res.error);
+    extractBtn.disabled=true;
+  }else{
+    showError("");
+    selected=new Set(res.pages);
+    refreshSelectionUI();
+  }
+  suppressRangeSync=false;
+}
+
+function buildChips(){
+  chipsBox.innerHTML="";
+  for(var p=1;p<=totalPages;p++){
+    (function(page){
+      var chip=document.createElement("button");
+      chip.type="button";
+      chip.className="chip";
+      chip.setAttribute("data-page",page);
+      chip.setAttribute("aria-pressed","false");
+      chip.setAttribute("aria-label","Toggle page "+page);
+      var num=document.createElement("span");
+      num.className="pg";
+      num.textContent="Page "+page;
+      chip.appendChild(num);
+      chip.addEventListener("click",function(){
+        if(selected.has(page))selected.delete(page);
+        else selected.add(page);
+        showError("");
+        refreshSelectionUI();
+      });
+      chipsBox.appendChild(chip);
+    })(p);
+  }
+  refreshSelectionUI();
+}
+
+/* Progressive enhancement: render real page thumbnails with pdf.js.
+   If pdf.js fails to load, the numbered chips above keep working. */
+async function renderThumbnails(){
+  if(!window.pdfjsLib||!srcBytes)return;
+  try{
+    if(window.pdfjsLib.GlobalWorkerOptions){
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+    thumbNote.style.display="block";
+    thumbNote.textContent="Rendering thumbnails…";
+    var doc=await window.pdfjsLib.getDocument({data:srcBytes.slice()}).promise;
+    var chips=chipsBox.querySelectorAll(".chip");
+    for(var i=0;i<chips.length;i++){
+      try{
+        var page=await doc.getPage(i+1);
+        var viewport=page.getViewport({scale:0.28});
+        var canvas=document.createElement("canvas");
+        canvas.width=Math.ceil(viewport.width);
+        canvas.height=Math.ceil(viewport.height);
+        await page.render({canvasContext:canvas.getContext("2d"),viewport:viewport}).promise;
+        chips[i].insertBefore(canvas,chips[i].firstChild);
+        if(i%10===9)thumbNote.textContent="Rendering thumbnails… "+(i+1)+" of "+chips.length;
+      }catch(e){/* keep the numbered chip for this page */ }
+    }
+    try{await doc.destroy();}catch(e){}
+    thumbNote.style.display="none";
+  }catch(e){
+    thumbNote.style.display="none";
+  }
+}
+
+dropZone.addEventListener("click",function(){fileInput.click();});
+dropZone.addEventListener("keydown",function(e){
+  if(e.key==="Enter"||e.key===" "){e.preventDefault();fileInput.click();}
+});
+["dragover","dragenter"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.add("over");});
+});
+["dragleave","drop"].forEach(function(ev){
+  dropZone.addEventListener(ev,function(e){e.preventDefault();dropZone.classList.remove("over");});
+});
+dropZone.addEventListener("drop",function(e){
+  var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f)handleFile(f);
+});
+fileInput.addEventListener("change",function(){
+  var f=fileInput.files&&fileInput.files[0];
+  if(f)handleFile(f);
+  fileInput.value="";
+});
+
+async function handleFile(file){
+  if(!/\.pdf$/i.test(file.name)&&file.type!=="application/pdf"){
+    setProgress("Please choose a PDF file.");
+    return;
+  }
+  results.style.display="none";
+  outBlob=null;
+  showError("");
+  setProgress("Reading "+file.name+"…");
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    srcBytes=new Uint8Array(await file.arrayBuffer());
+    srcName=file.name;
+    var doc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    totalPages=doc.getPageCount();
+    selected=new Set();
+    fileInfo.textContent="📄 "+file.name+" · "+totalPages+" page"+(totalPages===1?"":"s")+" · "+fmt(srcBytes.length);
+    rangeInput.value="";
+    pickerArea.style.display="block";
+    buildChips();
+    setProgress("Ready — type a page range or click thumbnails, then click Extract.");
+    renderThumbnails();
+  }catch(e){
+    setProgress("Could not open that PDF: "+(e&&e.message?e.message:e));
+  }
+}
+
+rangeInput.addEventListener("input",syncFromRangeInput);
+rangeInput.addEventListener("change",syncFromRangeInput);
+
+selectAllBtn.addEventListener("click",function(){
+  selected=new Set();
+  for(var p=1;p<=totalPages;p++)selected.add(p);
+  showError("");
+  refreshSelectionUI();
+});
+clearBtn.addEventListener("click",function(){
+  selected=new Set();
+  showError("");
+  refreshSelectionUI();
+});
+
+resetBtn.addEventListener("click",function(){
+  srcBytes=null;srcName="document.pdf";totalPages=0;selected=new Set();
+  fileInfo.textContent="";rangeInput.value="";chipsBox.innerHTML="";
+  pickerArea.style.display="none";results.style.display="none";outBlob=null;
+  showError("");setProgress("");extractBtn.disabled=true;
+});
+
+extractBtn.addEventListener("click",async function(){
+  if(!srcBytes||!selected.size)return;
+  var pages=Array.from(selected).sort(function(a,b){return a-b;});
+  extractBtn.disabled=true;
+  showError("");
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    setProgress("Loading document…",10);
+    var srcDoc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    setProgress("Copying "+pages.length+" page"+(pages.length===1?"":"s")+"…",40);
+    var out=await window.PDFLib.PDFDocument.create();
+    var idxs=pages.map(function(p){return p-1;});
+    var copied=await out.copyPages(srcDoc,idxs);
+    copied.forEach(function(pg){out.addPage(pg);});
+    setProgress("Saving new PDF…",80);
+    var bytes=await out.save();
+    outBlob=new Blob([bytes],{type:"application/pdf"});
+    outName=baseName(srcName)+"-extracted.pdf";
+    resultsTitle.textContent="Your extracted PDF is ready";
+    resultsInfo.textContent=pages.length+" page"+(pages.length===1?"":"s")+" extracted ("+formatRange(pages)+") · "+fmt(bytes.length)+" · file: "+outName;
+    results.style.display="block";
+    setProgress("Done — "+pages.length+" page"+(pages.length===1?"":"s")+" extracted.",100);
+  }catch(e){
+    setProgress("Extraction failed: "+(e&&e.message?e.message:e));
+  }finally{
+    extractBtn.disabled=selected.size===0;
+  }
+});
+
+downloadBtn.addEventListener("click",function(){
+  if(outBlob)downloadBlob(outBlob,outName);
+});
+againBtn.addEventListener("click",function(){
+  results.style.display="none";
+  outBlob=null;
+  setProgress("Pick different pages and extract again.");
+  document.getElementById("rangeInput").focus();
+});
+})();
+</script>
+</body>
+</html>
