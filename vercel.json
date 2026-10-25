@@ -190,7 +190,7 @@
     {
       "source": "/pdf2go-alternative",       "destination": "/index.html"     },     {       "source": "/blog",       "destination": "/index.html"     },     {       "source": "/how-to-delete-pages-from-pdf",       "destination": "/index.html"     },     {       "source": "/how-to-compress-pdf-to-100kb",       "destination": "/index.html"     },     {       "source": "/how-to-merge-pdf-files",
       "destination": "/index.html"
-    }, { "source": "/how-to-split-pdf", "destination": "/index.html" }, { "source": "/how-to-rotate-pdf-pages", "destination": "/index.html" }, { "source": "/how-to-convert-pdf-to-word", "destination": "/index.html" }, { "source": "/how-to-edit-pdf", "destination": "/index.html" }, { "source": "/how-to-sign-pdf", "destination": "/index.html" }
+    }, { "source": "/how-to-split-pdf", "destination": "/index.html" }, { "source": "/how-to-rotate-pdf-pages", "destination": "/index.html" }, { "source": "/how-to-convert-pdf-to-word", "destination": "/index.html" }, { "source": "/how-to-edit-pdf", "destination": "/index.html" }, { "source": "/how-to-sign-pdf", "destination": "/index.html" }, { "source": "/how-to-submit-assignment-as-pdf", "destination": "/index.html" }
   ],
   "redirects": [
     {
