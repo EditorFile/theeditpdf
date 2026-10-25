@@ -254,11 +254,11 @@ footer a{color:var(--gold);text-decoration:none}
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
 "use strict";
-if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";}
+if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";}
 var PDFLib=window.PDFLib;
 var fileBytes=null,fileName="document.pdf",filePages=0,outBytes=null,outName="output.pdf";
 var $=function(id){return document.getElementById(id);};
