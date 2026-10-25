@@ -22,7 +22,7 @@
 {"@type":"Question","name":"Does it work on mobile?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tool works on any modern browser, including phones and tablets. Very large PDFs may be slower on older devices."}}
 ]}
 </script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{--ivory:#faf7f0;--charcoal:#1a1a1a;--gold:#a67c2e;--gold-light:#c9a96e;--line:#e5ddd0;--muted:#666}
@@ -166,7 +166,7 @@ footer a{color:var(--gold);text-decoration:none}
 
 <script>
 (function(){
-if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js';}
+if(window.pdfjsLib){window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';}
 var file=null,selectedDpi=150,pngs=[];
 var dropZone=document.getElementById('dropZone'),fileInput=document.getElementById('fileInput'),
 fileInfo=document.getElementById('fileInfo'),fileName=document.getElementById('fileName'),fileMeta=document.getElementById('fileMeta'),
