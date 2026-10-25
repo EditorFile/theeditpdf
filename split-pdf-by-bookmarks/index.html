@@ -23,7 +23,7 @@
 ]}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <style>
 :root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
@@ -186,7 +186,7 @@ footer a{color:var(--muted)}
 (function(){
 "use strict";
 if(window.pdfjsLib){
-  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.2.67/build/pdf.worker.min.js";
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
 }
 var fileInput=document.getElementById("fileInput"),
     dropZone=document.getElementById("dropZone"),
