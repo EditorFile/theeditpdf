@@ -1,1 +1,1 @@
-Redeploy trigger 2026-11-12 — forces a fresh Vercel production deployment from current HEAD after the E1 queue stall.
+Redeploy trigger 2026-11-12 07:15 — second trigger, E2 rotate-pdf deployment stuck on Vercel rate limit.
