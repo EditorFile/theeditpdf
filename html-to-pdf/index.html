@@ -312,6 +312,12 @@ function stripTags(s){ return decodeEntities(s.replace(/<[^>]*>/g,"")).replace(/
    pre, hr, br, table/tr/td/th, strong/b, em/i, u, a, span and img
    (data-URI png/jpeg). Unknown tags are treated as plain containers. */
 function parseHtmlTree(html){
+  /* Drop markup declarations the tokenizer below cannot match as tags:
+     a DOCTYPE (or <?...?> / other <!...> declaration) would otherwise
+     fall through to the text branch and leak e.g. "!DOCTYPE html>" into
+     the PDF as a visible line. Comments are stripped first so a ">" inside
+     a comment cannot leave a fragment behind. */
+  html=String(html||"").replace(/<!--[\s\S]*?-->/g,"").replace(/<!DOCTYPE[^>]*>/gi,"").replace(/<\?[\s\S]*?\?>/g,"").replace(/<![^>]*>/g,"");
   var root={tag:"root",children:[]};
   var stack=[root];
   var VOID={img:1,br:1,hr:1,meta:1,link:1,input:1,source:1};
