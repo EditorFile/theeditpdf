@@ -106,6 +106,26 @@ canvas.preview{max-width:100%;border:1px solid var(--line);border-radius:12px;ba
 .kv dt{font-weight:700}
 .kv dd{margin:0}
 
+
+/* Footer redesign 2026-11-16: 5-column grid + bottom bar */
+.site-footer { background: #1c1a16; color: #e8e0d3; padding: 60px 24px 32px; margin-top: 80px; }
+.footer-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr; gap: 40px; }
+.footer-brand strong { font-family: Georgia, serif; font-size: 1.5rem; color: #c9a227; display: block; margin-bottom: 12px; }
+.footer-brand span { display: block; color: #a89f91; font-size: .9rem; line-height: 1.6; margin-bottom: 8px; }
+.footer-logo { width: 64px; height: 64px; border-radius: 50%; margin-bottom: 12px; display: block; }
+.dev-credit { margin-top: 16px; }
+.dev-credit strong { color: #c9a227; font-size: .9rem; display: inline; }
+.footer-email a { color: #c9a227; text-decoration: none; }
+.footer-email a:hover { color: #e8e0d3; }
+.footer-col h3 { font-family: Georgia, serif; color: #c9a227; font-size: .95rem; margin: 0 0 16px; font-weight: 400; letter-spacing: .05em; text-transform: uppercase; }
+.footer-col a { display: block; color: #a89f91; text-decoration: none; padding: 6px 0; font-size: .9rem; transition: color .2s; }
+.footer-col a:hover { color: #c9a227; }
+.footer-legal { max-width: 1200px; margin: 28px auto 0; padding-top: 18px; border-top: 1px solid #3a352c; display: flex; gap: 18px; flex-wrap: wrap; align-items: center; font-size: .85rem; color: #a89f91; }
+.footer-legal a { color: #a89f91; text-decoration: none; }
+.footer-legal a:hover { color: #c9a227; }
+.footer-legal .spacer { flex: 1; }
+@media (max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } .footer-brand { grid-column: 1 / -1; } }
+@media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } }
 </style>
 <script>
 /* Visit-only language switch (?lang=es etc.): applies the language for this
@@ -285,9 +305,7 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
   </div>
   <p style="color:var(--muted);font-size:.9rem;margin-top:20px">Files are processed on your device — nothing is uploaded.</p>
 </main>
-<footer>
-  <p>Proudly built by <a href="https://theeditpdf.com">Khando.dev</a> · <a href="https://theeditpdf.com/privacy">Privacy</a> · <a href="https://theeditpdf.com/terms">Terms</a></p>
-</footer>
+<footer class="site-footer"><div class="footer-grid"><div class="footer-brand"><img class="footer-logo" src="/logo-transparent-96.png" alt="The Edit PDF logo" width="64" height="64" /><strong>The Edit PDF</strong><span>Edit, organize, and export files on your device.</span><span class="trust-line">100% free • No signup • Files never leave your device</span><span class="dev-credit">Proudly built by <strong>Khando.dev</strong></span><span class="footer-email"><a href="mailto:info@theeditpdf.com">info@theeditpdf.com</a></span><span class="sister-tool">Also try our free text tool: <a href="https://muse.ai/s/convert-case-xoxl6dxrrbdxuxpxw/FvluhxgHHP7F6pcirlNUe3YgyRSFsjTiZ5M-MHB8e00" style="color:#c9a227;text-decoration:none">Convert Case</a></span></div><div class="footer-col"><h3>Edit &amp; Organize</h3><a href="/pdf-editor">PDF Editor</a><a href="/merge-pdf">Merge PDF</a><a href="/split-pdf">Split PDF</a><a href="/delete-pages">Delete Pages</a><a href="/rotate-pdf">Rotate PDF</a><a href="/crop-pdf">Crop PDF</a><a href="/organize-pdf">Organize PDF</a><a href="/extract-pdf-pages">Extract PDF Pages</a><a href="/page-numbers">Page Numbers</a><a href="/watermark-pdf">Watermark PDF</a><a href="/redact-pdf">Redact PDF</a><a href="/fill-pdf-form">Fill PDF Form</a><a href="/create-bookmarks">Create Bookmarks</a><a href="/flip-pdf">Flip PDF</a></div><div class="footer-col"><h3>Convert</h3><a href="/pdf-to-word">PDF to Word</a><a href="/pdf-to-jpg">PDF to JPG</a><a href="/pdf-to-png">PDF to PNG</a><a href="/pdf-to-text">PDF to Text</a><a href="/pdf-to-excel">PDF to Excel</a><a href="/pdf-to-powerpoint">PDF to PowerPoint</a><a href="/pdf-to-markdown">PDF to Markdown</a><a href="/pdf-to-pdfa">PDF to PDF/A</a><a href="/jpg-to-pdf">JPG to PDF</a><a href="/png-to-pdf">PNG to PDF</a><a href="/word-to-pdf">Word to PDF</a><a href="/excel-to-pdf">Excel to PDF</a><a href="/powerpoint-to-pdf">PowerPoint to PDF</a><a href="/html-to-pdf">HTML to PDF</a><a href="/scan-to-pdf">Scan to PDF</a></div><div class="footer-col"><h3>Compress, Split &amp; Manage</h3><a href="/compress-pdf">Compress PDF</a><a href="/compress-pdf-to-size">Compress PDF to Size</a><a href="/split-pdf-by-size">Split PDF by Size</a><a href="/split-pdf-by-bookmarks">Split PDF by Bookmarks</a><a href="/split-pdf-by-text">Split PDF by Text</a><a href="/split-pdf-in-half">Split PDF in Half</a><a href="/alternate-mix-pdf">Alternate & Mix PDF</a><a href="/large-pdf-toolkit">Large PDF Toolkit</a><a href="/rename-pdf">Rename PDF</a><a href="/remove-annotations">Remove Annotations</a><a href="/pdf-tools-bundle">PDF Tools Bundle</a><a href="/extract-images-from-pdf">Extract Images from PDF</a><a href="/deskew-pdf">Deskew PDF</a></div><div class="footer-col"><h3>Secure &amp; AI</h3><a href="/protect-pdf">Protect PDF</a><a href="/unlock-pdf">Unlock PDF</a><a href="/sign-pdf">Sign PDF</a><a href="/pdf-repair">Repair PDF</a><a href="/ocr-pdf">OCR PDF</a><a href="/ocr-handwriting">OCR Handwriting</a><a href="/pdf-metadata">PDF Metadata</a><a href="/compare-pdf">Compare PDF</a><a href="/bates-numbering">Bates Numbering</a><a href="/pdf-accessibility">PDF Accessibility</a><a href="/pdf-safety-scanner">PDF Safety Scanner</a><a href="/legal-pdf-bundle">Legal PDF Bundle</a><a href="/summarize-pdf">Summarize PDF</a><a href="/translate-pdf">Translate PDF</a></div></div><div class="footer-legal"><span>© 2026 The Edit PDF. All rights reserved.</span><span class="spacer"></span><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy Policy</a><a href="/terms">Terms of Use</a><a href="/">All Tools</a><span class="footer-trust">100% free — no signup, files never leave your device</span></div></footer>
 <script>
 /* html2pdf core — shared by word-to-pdf and html-to-pdf.
    Pure logic, no DOM access except DOMParser-free string parsing, so the
