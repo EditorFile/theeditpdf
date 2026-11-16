@@ -1236,9 +1236,10 @@ _so=document.getElementById("completionStartOver"),
 _onStartOver=null,_src="editor";
 function _res(){return window.__TEP_lastResult||null}
 function _name(){var r=_res();return (r&&r.name)||"document.pdf"}
-function _applyName(n){n=(n||"").trim();if(!n)return;if(!/\.pdf$/i.test(n))n+=".pdf";var r=_res();if(r)r.name=n;if(_cf)_cf.textContent=n;var ef=document.getElementById("editorFileName");if(ef)ef.textContent=n}
-function _showRename(){if(_rnRow){_rnRow.hidden=false;_rnInput.value=_name().replace(/\.pdf$/i,"");setTimeout(function(){try{_rnInput.focus();_rnInput.select()}catch(e){}},40)}}
+function _applyName(n){n=(n||"").trim();if(!n)return;var r=_res();var cur=/\.([a-z0-9]+)$/i.exec((r&&r.name)||"");if(!/\.[a-z0-9]+$/i.test(n))n+="."+(cur?cur[1].toLowerCase():"pdf");if(r)r.name=n;if(_cf)_cf.textContent=n;var ef=document.getElementById("editorFileName");if(ef)ef.textContent=n}
+function _showRename(){if(_rnRow){_rnRow.hidden=false;_rnInput.value=_name().replace(/\.[a-z0-9]+$/i,"");setTimeout(function(){try{_rnInput.focus();_rnInput.select()}catch(e){}},40)}}
 function _resetDl(){if(_dl){_dl.innerHTML="\u2b07\ufe0f Download";delete _dl.dataset.armed}if(_rnRow)_rnRow.hidden=true}
+function _saveTypes(name){var m=/\.([a-z0-9]+)$/i.exec(name||"");var ext=m?m[1].toLowerCase():"pdf";var map={pdf:["PDF document","application/pdf",".pdf"],docx:["Word document","application/vnd.openxmlformats-officedocument.wordprocessingml.document",".docx"],zip:["ZIP archive","application/zip",".zip"],txt:["Text file","text/plain",".txt"],png:["PNG image","image/png",".png"],jpg:["JPEG image","image/jpeg",".jpg"],jpeg:["JPEG image","image/jpeg",".jpeg"],xlsx:["Excel spreadsheet","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",".xlsx"],pptx:["PowerPoint presentation","application/vnd.openxmlformats-officedocument.presentationml.presentation",".pptx"],md:["Markdown file","text/markdown",".md"],html:["HTML file","text/html",".html"],csv:["CSV file","text/csv",".csv"],xml:["XML file","text/xml",".xml"],json:["JSON file","application/json",".json"]};var t=map[ext]||map.pdf;var acc={};acc[t[1]]=[t[2]];return[{description:t[0],accept:acc}];}
 async function _saveFlow(b,n){
 var r=b?{blob:b,name:n||"document.pdf"}:_res();
 if(!r||!r.blob){ne("Save the PDF first.","error");return}
@@ -1247,7 +1248,7 @@ if(_rnRow&&_rnRow.hidden&&!_co.hidden){_showRename();if(_dl){_dl.innerHTML="\U00
 if(_rnRow&&!_rnRow.hidden){_applyName(_rnInput.value);_resetDl();name=_name();r=_res()}
 try{
 if(window.showSaveFilePicker){
-var h=await window.showSaveFilePicker({suggestedName:name,types:[{description:"PDF document",accept:{"application/pdf":[".pdf"]}}]});
+var h=await window.showSaveFilePicker({suggestedName:name,types:_saveTypes(name)});
 var w=await h.createWritable();await w.write(r.blob);await w.close();
 ne("Saved successfully.","success");return}
 throw new Error("no-fsa");
