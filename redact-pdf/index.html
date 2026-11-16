@@ -3391,7 +3391,7 @@ function redMove(e){
 function redEnd(){
   if(drawing&&drawing.box&&drawing.box.w>4&&drawing.box.h>4){
     (red.rects[red.page]=red.rects[red.page]||[]).push(drawing.box);
-    var d=document.createElement("div");d.className="red-box",b=drawing.box;
+    var d=document.createElement("div"),b=drawing.box;d.className="red-box";
     d.style.left=b.x+"px";d.style.top=b.y+"px";d.style.width=b.w+"px";d.style.height=b.h+"px";
     redLayer.appendChild(d);
     redCount();
