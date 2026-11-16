@@ -938,6 +938,7 @@ async function run(ctx) {
   var doc = await PL.PDFDocument.load(bytes, { ignoreErrors: true });
   var title = "";
   try { title = doc.getTitle() || ""; } catch (e) {}
+  var realTitle = (title && !/^untitled$/i.test(title.trim())) ? title : "";
   var lang = "";
   try {
     var langObj = doc.catalog.lookup(PL.PDFName.of("Lang"));
@@ -977,14 +978,13 @@ async function run(ctx) {
   pdfDoc.destroy();
 
   var hd = detectHeadings(pages);
-  var h1 = hd.headings.filter(function (h) { return h.level === 1; })[0];
-  var suggestedTitle = title || (h1 ? h1.text : "") ||
-    ctx.safeName(file.name).replace(/\.pdf$/i, "").replace(/-/g, " ");
+  var suggestedTitle = realTitle ||
+    ctx.safeName(file.name).replace(/\.pdf$/i, "").replace(/-/g, " ") || "Untitled PDF";
 
   var checks = [
     { id: "title", label: "Document title set", weight: 3,
-      status: title ? "pass" : "fail",
-      detail: title ? "Title: “" + title + "”" : "No title — screen readers announce the file name instead." },
+      status: realTitle ? "pass" : "fail",
+      detail: realTitle ? "Title: “" + realTitle + "”" : "No title — screen readers announce the file name instead." },
     { id: "lang", label: "Document language set", weight: 3,
       status: lang ? "pass" : "fail",
       detail: lang ? "Language: " + lang : "No /Lang entry — screen readers guess the pronunciation language." },
@@ -1065,7 +1065,9 @@ function renderReport(ctx, file, res, doc, PL) {
 
   $("tep-apply").addEventListener("click", async function () {
     try {
-      var newTitle = ($("accTitle") && $("accTitle").value || "").trim() || res.suggestedTitle;
+      var newTitle = ($("accTitle") && $("accTitle").value || "").trim();
+      if (/^untitled$/i.test(newTitle)) newTitle = "";
+      newTitle = newTitle || res.suggestedTitle;
       var newLang = ($("accLang") && $("accLang").value) || "en";
       var wantOutline = $("accOutline") && $("accOutline").checked;
       ctx.status("Applying fixes…");
@@ -1129,11 +1131,15 @@ function buildOutline(doc, PL, headings) {
     item.set(PL.PDFName.of("Parent"), outlineRef);
     if (i > 0) item.set(PL.PDFName.of("Prev"), refs[i - 1]);
     if (i < refs.length - 1) item.set(PL.PDFName.of("Next"), refs[i + 1]);
-    var page = doc.getPage(Math.max(1, Math.min(h.page, doc.getPageCount())));
+    var page = doc.getPage(Math.max(0, Math.min(h.page - 1, doc.getPageCount() - 1)));
     var size = page.getSize();
-    item.set(PL.PDFName.of("Dest"), PL.PDFArray.withContext(ctx,
-      [page.ref, PL.PDFName.of("XYZ"), PL.PDFNumber.of(0),
-       PL.PDFNumber.of(Math.max(0, size.height - h.y - 10)), PL.PDFNumber.of(0)]));
+    var dest = PL.PDFArray.withContext(ctx);
+    dest.push(page.ref);
+    dest.push(PL.PDFName.of("XYZ"));
+    dest.push(PL.PDFNumber.of(0));
+    dest.push(PL.PDFNumber.of(Math.max(0, size.height - h.y - 10)));
+    dest.push(PL.PDFNumber.of(0));
+    item.set(PL.PDFName.of("Dest"), dest);
     ctx.assign(refs[i], item);
   });
   doc.catalog.set(PL.PDFName.of("Outlines"), outlineRef);
