@@ -1879,7 +1879,9 @@ var TranslateCore = (function () {
   // Extract a layout map: pages -> lines {text, x, baseY (top-origin), w, fontSize}
   // baseY is the text baseline measured from the top of the page.
   async function extractLayoutMap(pdfBytes, pdfjsLib) {
-    var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(pdfBytes) }).promise;
+    // Hand pdf.js a COPY: it transfers (detaches) the buffer to its worker,
+    // and the caller still needs the original bytes for rebuildPdf's PDFDocument.load.
+    var pdf = await pdfjsLib.getDocument({ data: new Uint8Array(pdfBytes.slice(0)) }).promise;
     var pages = [];
     for (var p = 1; p <= pdf.numPages; p++) {
       var pg = await pdf.getPage(p);
@@ -1984,7 +1986,8 @@ var TranslateCore = (function () {
   // opts: {srcBytes, translations, fontkit, naskhFontBytes (optional, needed for RTL)}
   // Returns {bytes, report:{translated, kept, shrunk, overflow:[{page,line}]}}.
   async function rebuildPdf(opts) {
-    var src = await PDFLib.PDFDocument.load(opts.srcBytes);
+    // Load a copy so pdf-lib never shares the caller's buffer.
+    var src = await PDFLib.PDFDocument.load(opts.srcBytes.slice ? opts.srcBytes.slice(0) : opts.srcBytes);
     var out = await PDFLib.PDFDocument.create();
     if (opts.fontkit) out.registerFontkit(opts.fontkit);
     var helv = await out.embedFont(PDFLib.StandardFonts.Helvetica);
