@@ -33,6 +33,7 @@
 ]}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <style>
 :root{--ivory:#fdf8ef;--surface:#fffdf7;--ink:#1d2420;--muted:#6b7280;--line:#e8ddc8;--gold:#a67c2e;--gold-d:#8a6524;--green:#1d7a4f}
 *{box-sizing:border-box}
@@ -93,6 +94,29 @@ h3{font-size:1.05rem;margin:18px 0 6px}
 .pillar b{font-size:1.05rem}
 footer{max-width:1080px;margin:0 auto;padding:26px 20px 40px;color:var(--muted);font-size:.9rem;text-align:center}
 footer a{color:var(--muted)}
+.builder-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:14px 0 6px}
+.toolbtn{background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:.92rem;font-weight:700;cursor:pointer;color:var(--ink)}
+.toolbtn.active{background:var(--gold);border-color:var(--gold);color:#fff}
+.toolbtn:hover{border-color:var(--gold)}
+.builder-toolbar label{font-weight:700;font-size:.92rem;margin-left:6px}
+.builder-toolbar input[type=number]{width:64px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:1rem;background:#fff}
+.builder-hint{color:var(--muted);font-size:.9rem;margin:4px 0 0}
+.builder-nav{display:flex;gap:10px;align-items:center;justify-content:center;margin:14px 0 4px;font-weight:700}
+.pagewrap{position:relative;margin:14px auto 6px;width:fit-content;max-width:100%;box-shadow:0 8px 26px rgba(29,36,32,.18);border:1px solid var(--line);background:#fff}
+.pagewrap canvas{display:block;max-width:100%;height:auto}
+.builder-overlay{position:absolute;left:0;top:0;touch-action:none;cursor:crosshair}
+.placed-field{position:absolute;border:2px solid var(--gold);background:rgba(166,124,46,.10);cursor:move;touch-action:none;user-select:none;box-sizing:border-box}
+.placed-field:hover{background:rgba(166,124,46,.20)}
+.placed-field .pf-label{position:absolute;left:0;top:-19px;background:var(--gold);color:#fff;font-size:.68rem;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap;pointer-events:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.placed-field .pf-resize{position:absolute;right:-7px;bottom:-7px;width:14px;height:14px;background:var(--gold);border:2px solid #fff;border-radius:4px;cursor:nwse-resize;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.placed-field.checkbox-field{border-radius:4px}
+.placed-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;margin:8px 0}
+.placed-row .placed-type{font-size:.78rem;font-weight:700;color:var(--gold-d);text-transform:uppercase;letter-spacing:.04em;min-width:74px}
+.placed-row .placed-name{flex:1;min-width:120px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:.95rem}
+.placed-row .placed-page{color:var(--muted);font-size:.85rem;white-space:nowrap}
+.placed-row .placed-font{width:62px;padding:8px 8px;border:1px solid var(--line);border-radius:8px;font-size:.95rem}
+.placed-row .placed-del{background:#fdf0f0;border:1px solid #f0c0c0;color:#9b1c1c;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer}
+.placed-empty{color:var(--muted);font-size:.92rem;margin:8px 0}
 @media(max-width:640px){h1{font-size:1.7rem}.card{padding:18px}}
 </style>
 </head>
@@ -125,6 +149,7 @@ footer a{color:var(--muted)}
       <div class="actions">
         <button class="btn" id="fillBtn">✅ Fill &amp; Download</button>
         <button class="btn secondary" id="clearBtn">Clear answers</button>
+        <button class="btn secondary" id="addFieldsBtn2">➕ Add new fields</button>
         <button class="btn secondary" id="resetBtn">Start over</button>
       </div>
     </div>
@@ -132,7 +157,37 @@ footer a{color:var(--muted)}
     <div id="noFieldsArea" style="display:none">
       <div class="note" id="noFieldsText"></div>
       <div class="actions">
+        <button class="btn" id="addFieldsBtn">✏️ Add fillable fields to this PDF</button>
         <button class="btn secondary" id="resetBtn2">Choose another PDF</button>
+      </div>
+    </div>
+
+    <div id="createFieldsArea" style="display:none">
+      <h3 style="margin:20px 0 4px">Add fillable fields</h3>
+      <p style="color:var(--muted);font-size:.95rem;margin:0">This PDF has no form fields yet — place your own. Pick a field type, then click on the page where the field should go. Drag a placed field to move it, drag its bottom-right corner to resize it. You can place fields on any page.</p>
+      <div class="builder-toolbar" role="group" aria-label="Field type">
+        <button type="button" class="toolbtn active" data-tool="text">🔤 Text field</button>
+        <button type="button" class="toolbtn" data-tool="checkbox">☑️ Checkbox</button>
+        <button type="button" class="toolbtn" data-tool="signature">✍️ Signature</button>
+        <label for="builderFontSize">Font size</label>
+        <input type="number" id="builderFontSize" min="8" max="48" value="14" aria-label="Font size for new text fields">
+      </div>
+      <p class="builder-hint">Click on the page to place a field. Signature fields are text boxes where the signer types their name.</p>
+      <div class="builder-nav">
+        <button class="btn secondary small" id="builderPrev">← Prev page</button>
+        <span id="builderPageLabel">Page 1 of 1</span>
+        <button class="btn secondary small" id="builderNext">Next page →</button>
+      </div>
+      <div class="pagewrap" id="builderPageWrap">
+        <canvas id="builderCanvas"></canvas>
+        <div class="builder-overlay" id="builderOverlay"></div>
+      </div>
+      <h3 style="margin:18px 0 4px">Placed fields <span id="placedCount" style="font-weight:400;color:var(--muted);font-size:.9rem"></span></h3>
+      <div id="placedList"></div>
+      <div class="actions">
+        <button class="btn" id="createBtn" disabled>✅ Create fields &amp; Download</button>
+        <button class="btn secondary" id="clearPlacedBtn">Clear placed fields</button>
+        <button class="btn secondary" id="backBuilderBtn">← Back</button>
       </div>
     </div>
 
@@ -148,7 +203,7 @@ footer a{color:var(--muted)}
         <button class="btn secondary" id="againBtn">Adjust answers</button>
       </div>
     </div>
-    <div class="note">Tip: need a signature on the form too? Use <a href="https://theeditpdf.com/sign-pdf">Sign PDF</a>. Need to add text to a PDF that has no form fields? Use the <a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>.</div>
+    <div class="note">Tip: need a signature on the form too? Use <a href="https://theeditpdf.com/sign-pdf">Sign PDF</a>. PDF with no form fields? Click "Add fillable fields" after upload and place text, checkbox or signature boxes yourself. Need to add text to a PDF that has no form fields? Use the <a href="https://theeditpdf.com/pdf-editor">PDF Editor</a>.</div>
   </section>
 
   <h2>How to fill a PDF form</h2>
@@ -165,7 +220,7 @@ footer a{color:var(--muted)}
   <div class="faq">
     <details><summary>How do I fill a PDF form online?</summary><p>Upload your fillable PDF and the tool detects its form fields automatically. Fill in the text boxes, tick the checkboxes, pick from the dropdowns and radio buttons, then click Fill &amp; Download. You get a completed PDF with your answers saved inside it.</p></details>
     <details><summary>What is a fillable PDF form?</summary><p>A fillable PDF (also called an AcroForm) has real interactive fields built into the file — you can click into a box and type, instead of just seeing printed text. This tool reads those real fields, so your answers are stored as proper form data, not as a text overlay.</p></details>
-    <details><summary>What if my PDF has no form fields?</summary><p>If the PDF is a flat scan or a regular document with no built-in fields, the tool tells you so instead of failing silently. In that case you can still add text with the free PDF Editor, or ask the form provider for a fillable version of the file.</p></details>
+    <details><summary>What if my PDF has no form fields?</summary><p>If the PDF is a flat scan or a regular document with no built-in fields, you can add them right here: choose "Add fillable fields", click on the page to place text boxes, checkboxes or signature boxes, then download a fillable PDF. You can also add text with the free PDF Editor, or ask the form provider for a fillable version of the file.</p></details>
     <details><summary>Are my filled answers saved in the downloaded PDF?</summary><p>Yes. Your answers are written into the PDF's form fields and their appearances are updated, so the completed form opens correctly in Adobe Acrobat, Chrome, Edge, and any other PDF reader.</p></details>
     <details><summary>Is my PDF uploaded anywhere?</summary><p>No. The tool runs entirely in your browser with pdf-lib. Your file never leaves your device.</p></details>
   </div>
@@ -184,6 +239,10 @@ footer a{color:var(--muted)}
 <script>
 (function(){
 "use strict";
+/* pdf.js renders the page preview for the field-creation mode. */
+if(window.pdfjsLib&&window.pdfjsLib.GlobalWorkerOptions){
+  window.pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+}
 var fileInput=document.getElementById("fileInput"),
     dropZone=document.getElementById("dropZone"),
     fileInfo=document.getElementById("fileInfo"),
@@ -205,6 +264,32 @@ var fileInput=document.getElementById("fileInput"),
     resultsInfo=document.getElementById("resultsInfo"),
     downloadBtn=document.getElementById("downloadBtn"),
     againBtn=document.getElementById("againBtn"),
+    builderArea=document.getElementById("createFieldsArea"),
+    builderCanvas=document.getElementById("builderCanvas"),
+    builderOverlay=document.getElementById("builderOverlay"),
+    builderPageWrap=document.getElementById("builderPageWrap"),
+    builderPageLabel=document.getElementById("builderPageLabel"),
+    builderPrev=document.getElementById("builderPrev"),
+    builderNext=document.getElementById("builderNext"),
+    placedList=document.getElementById("placedList"),
+    placedCount=document.getElementById("placedCount"),
+    createBtn=document.getElementById("createBtn"),
+    clearPlacedBtn=document.getElementById("clearPlacedBtn"),
+    backBuilderBtn=document.getElementById("backBuilderBtn"),
+    addFieldsBtn=document.getElementById("addFieldsBtn"),
+    addFieldsBtn2=document.getElementById("addFieldsBtn2"),
+    fontSizeInput=document.getElementById("builderFontSize"),
+    pdfjsDoc=null,
+    builderPage=0,
+    builderPageCount=0,
+    builderDispW=0,
+    builderDispH=0,
+    placedFields=[],
+    nextFieldId=1,
+    activeTool="text",
+    dragState=null,
+    overlayDivs={},
+    resizeTimer=null,
     srcBytes=null,
     srcName="document.pdf",
     fieldsMeta=[],
@@ -457,10 +542,16 @@ function renderFields(){
 
 function resetAll(){
   srcBytes=null;srcName="document.pdf";fieldsMeta=[];outBlob=null;
+  pdfjsDoc=null;builderPage=0;builderPageCount=0;
+  placedFields=[];nextFieldId=1;activeTool="text";dragState=null;overlayDivs={};
   fileInfo.textContent="";
   formFieldsBox.innerHTML="";
+  placedList.innerHTML="";
+  placedCount.textContent="";
+  createBtn.disabled=true;
   fieldsArea.style.display="none";
   noFieldsArea.style.display="none";
+  builderArea.style.display="none";
   results.style.display="none";
   showError("");
   setProgress("");
@@ -524,10 +615,10 @@ async function handleFile(file){
           ", but none that can be filled in.";
       }
       reason+=" A fillable form (AcroForm) has real interactive fields built in — a flat scan or a regular document does not. "+
-        "You can still add text with the free PDF Editor, or ask the form provider for a fillable version of this file.";
+        "You can add fields to this PDF right here: click \"Add fillable fields\" below, place text boxes, checkboxes or signature boxes on the page, then download a fillable PDF.";
       noFieldsText.textContent="⚠️ "+reason;
       noFieldsArea.style.display="block";
-      setProgress("No fillable fields found in this PDF.");
+      setProgress("No fillable fields found — but you can add your own below.");
       return;
     }
     fieldsArea.style.display="block";
@@ -574,6 +665,34 @@ function readAnswer(meta){
   return null;
 }
 
+/* Write the answers currently typed in the fill view into a loaded
+   pdf-lib form. Shared by the Fill & Download flow and by the
+   field-creation download (so answers are kept when new fields are
+   added to a PDF that already has fields). Returns {applied, skipped}. */
+function applyAnswersToForm(form,byName){
+  var applied=0,skipped=[];
+  fieldsMeta.forEach(function(meta){
+    var f=byName[meta.name];
+    if(!f||meta.readOnly||!meta.el)return;
+    var ans=readAnswer(meta);
+    if(ans===null)return; /* left blank on purpose — keep original value */
+    try{
+      if(meta.kind==="text"){
+        f.setText(String(ans));
+      }else if(meta.kind==="checkbox"){
+        if(ans)f.check();else f.uncheck();
+      }else if(meta.kind==="dropdown"||meta.kind==="radio"){
+        if(meta.options&&meta.options.indexOf(ans)!==-1)f.select(ans);
+        else throw new Error("option not in list");
+      }
+      applied++;
+    }catch(e){
+      skipped.push(meta.name);
+    }
+  });
+  return {applied:applied,skipped:skipped};
+}
+
 fillBtn.addEventListener("click",async function(){
   if(!srcBytes||!fieldsMeta.length)return;
   fillBtn.disabled=true;
@@ -588,29 +707,8 @@ fillBtn.addEventListener("click",async function(){
       try{byName[f.getName()]=f;}catch(e){}
     });
     setProgress("Writing your answers into the form…",40);
-    var applied=0,skipped=[];
-    fieldsMeta.forEach(function(meta){
-      var f=byName[meta.name];
-      if(!f||meta.readOnly||!meta.el)return;
-      var ans=readAnswer(meta);
-      if(ans===null)return; /* left blank on purpose — keep original value */
-      try{
-        if(meta.kind==="text"){
-          f.setText(String(ans));
-        }else if(meta.kind==="checkbox"){
-          if(ans)f.check();else f.uncheck();
-        }else if(meta.kind==="dropdown"){
-          if(meta.options&&meta.options.indexOf(ans)!==-1)f.select(ans);
-          else throw new Error("option not in list");
-        }else if(meta.kind==="radio"){
-          if(meta.options&&meta.options.indexOf(ans)!==-1)f.select(ans);
-          else throw new Error("option not in list");
-        }
-        applied++;
-      }catch(e){
-        skipped.push(meta.name);
-      }
-    });
+    var res=applyAnswersToForm(form,byName),
+        applied=res.applied,skipped=res.skipped;
     /* Make filled values visible in every reader: update appearances
        with an embedded standard font. Failure here is non-fatal —
        most readers still render the values from the field data. */
@@ -635,14 +733,358 @@ fillBtn.addEventListener("click",async function(){
   }
 });
 
+/* ================= FIELD CREATION (add-fields mode) =================
+   Placed fields are stored as fractions of the page (x,y,w,h in 0..1)
+   so they survive re-renders and resizes; they are converted to PDF
+   points (origin bottom-left) only when the PDF is built. */
+
+function sanitizeFieldName(s){
+  return String(s||"").replace(/[^\w \-]/g,"").replace(/\s+/g," ").trim();
+}
+function defaultFieldName(type){
+  if(type==="checkbox")return "Checkbox";
+  if(type==="signature")return "Signature";
+  return "Text field";
+}
+function uniqueFieldName(base,taken){
+  var name=base,n=2;
+  while(taken[name]){name=base+"_"+n;n++;}
+  return name;
+}
+function toolLabel(type){
+  if(type==="checkbox")return "Checkbox";
+  if(type==="signature")return "Signature";
+  return "Text";
+}
+function findPlaced(id){
+  for(var i=0;i<placedFields.length;i++)if(placedFields[i].id===id)return placedFields[i];
+  return null;
+}
+function builderToolSize(){
+  if(activeTool==="checkbox")return{w:22,h:22};
+  if(activeTool==="signature")return{w:220,h:56};
+  return{w:200,h:30};
+}
+
+async function openBuilder(){
+  if(!srcBytes)return;
+  fieldsArea.style.display="none";
+  noFieldsArea.style.display="none";
+  results.style.display="none";
+  showError("");
+  setProgress("");
+  builderArea.style.display="block";
+  if(!window.pdfjsLib){
+    showError("The page preview engine could not load. Check your connection and try again.");
+    return;
+  }
+  try{
+    if(!pdfjsDoc){
+      pdfjsDoc=await window.pdfjsLib.getDocument({data:srcBytes.slice()}).promise;
+      builderPageCount=pdfjsDoc.numPages;
+      builderPage=0;
+    }
+    await renderBuilderPage();
+    renderPlacedList();
+  }catch(e){
+    showError("Could not render a preview of this PDF: "+(e&&e.message?e.message:e));
+  }
+}
+function closeBuilder(){
+  builderArea.style.display="none";
+  if(fieldsMeta.length)fieldsArea.style.display="block";
+  else noFieldsArea.style.display="block";
+  setProgress("");
+}
+
+async function renderBuilderPage(){
+  var page=await pdfjsDoc.getPage(builderPage+1);
+  var avail=Math.min(builderArea.clientWidth||760,760);
+  var base=page.getViewport({scale:1});
+  var scale=avail/base.width;
+  var vp=page.getViewport({scale:scale});
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  var rvp=page.getViewport({scale:scale*dpr});
+  builderCanvas.width=Math.round(rvp.width);
+  builderCanvas.height=Math.round(rvp.height);
+  builderCanvas.style.width=vp.width+"px";
+  builderCanvas.style.height=vp.height+"px";
+  var ctx=builderCanvas.getContext("2d");
+  await page.render({canvasContext:ctx,viewport:rvp}).promise;
+  builderDispW=vp.width;
+  builderDispH=vp.height;
+  builderOverlay.style.width=vp.width+"px";
+  builderOverlay.style.height=vp.height+"px";
+  builderPageLabel.textContent="Page "+(builderPage+1)+" of "+builderPageCount;
+  builderPrev.disabled=builderPage===0;
+  builderNext.disabled=builderPage>=builderPageCount-1;
+  renderPlacedOverlays();
+}
+
+function positionOverlayDiv(div,f){
+  div.style.left=(f.x*builderDispW)+"px";
+  div.style.top=(f.y*builderDispH)+"px";
+  div.style.width=Math.max(f.w*builderDispW,4)+"px";
+  div.style.height=Math.max(f.h*builderDispH,4)+"px";
+  var label=div.querySelector(".pf-label");
+  if(label)label.textContent=f.name;
+}
+function renderPlacedOverlays(){
+  builderOverlay.innerHTML="";
+  overlayDivs={};
+  placedFields.forEach(function(f){
+    if(f.page!==builderPage)return;
+    var div=document.createElement("div");
+    div.className="placed-field"+(f.type==="checkbox"?" checkbox-field":"");
+    positionOverlayDiv(div,f);
+    var label=document.createElement("span");
+    label.className="pf-label";
+    label.textContent=f.name;
+    div.appendChild(label);
+    var handle=document.createElement("span");
+    handle.className="pf-resize";
+    handle.title="Drag to resize";
+    div.appendChild(handle);
+    div.title=f.name+" — drag to move, drag the corner to resize";
+    div.addEventListener("pointerdown",function(e){startDrag(e,f.id,"move");});
+    handle.addEventListener("pointerdown",function(e){startDrag(e,f.id,"resize");});
+    builderOverlay.appendChild(div);
+    overlayDivs[f.id]=div;
+  });
+}
+
+function startDrag(e,id,mode){
+  e.stopPropagation();
+  e.preventDefault();
+  var f=findPlaced(id);
+  if(!f)return;
+  dragState={mode:mode,id:id,sx:e.clientX,sy:e.clientY,ox:f.x,oy:f.y,ow:f.w,oh:f.h};
+  window.addEventListener("pointermove",onDragMove);
+  window.addEventListener("pointerup",onDragEnd,{once:true});
+}
+function onDragMove(e){
+  if(!dragState)return;
+  var f=findPlaced(dragState.id);
+  if(!f)return;
+  var r=builderOverlay.getBoundingClientRect();
+  if(!r.width||!r.height)return;
+  var dx=(e.clientX-dragState.sx)/r.width,
+      dy=(e.clientY-dragState.sy)/r.height;
+  if(dragState.mode==="move"){
+    f.x=Math.min(Math.max(dragState.ox+dx,0),1-f.w);
+    f.y=Math.min(Math.max(dragState.oy+dy,0),1-f.h);
+  }else{
+    var minW=(f.type==="checkbox"?14:40)/builderDispW,
+        minH=(f.type==="checkbox"?14:16)/builderDispH;
+    f.w=Math.min(Math.max(dragState.ow+dx,minW),1-f.x);
+    f.h=Math.min(Math.max(dragState.oh+dy,minH),1-f.y);
+  }
+  var div=overlayDivs[f.id];
+  if(div)positionOverlayDiv(div,f);
+}
+function onDragEnd(){
+  dragState=null;
+  window.removeEventListener("pointermove",onDragMove);
+}
+
+/* Click on empty page area places a new field of the active type. */
+builderOverlay.addEventListener("pointerdown",function(e){
+  if(e.target!==builderOverlay)return;
+  var r=builderOverlay.getBoundingClientRect();
+  if(!r.width||!r.height)return;
+  var size=builderToolSize();
+  var w=size.w/builderDispW,h=size.h/builderDispH;
+  var x=Math.min(Math.max((e.clientX-r.left)/r.width-w/2,0),1-w);
+  var y=Math.min(Math.max((e.clientY-r.top)/r.height-h/2,0),1-h);
+  var n=placedFields.filter(function(f){return f.type===activeTool;}).length+1;
+  var name=(activeTool==="checkbox"?"Checkbox":activeTool==="signature"?"Signature":"Text")+"_"+n;
+  var fs=parseInt(fontSizeInput.value,10);
+  if(isNaN(fs)||fs<8||fs>48)fs=14;
+  placedFields.push({id:nextFieldId++,name:name,type:activeTool,page:builderPage,x:x,y:y,w:w,h:h,fontSize:fs});
+  renderPlacedOverlays();
+  renderPlacedList();
+  e.preventDefault();
+});
+
+function renderPlacedList(){
+  placedList.innerHTML="";
+  if(!placedFields.length){
+    var empty=document.createElement("p");
+    empty.className="placed-empty";
+    empty.textContent="No fields placed yet — click on the page above to add one.";
+    placedList.appendChild(empty);
+  }
+  placedFields.forEach(function(f){
+    var row=document.createElement("div");
+    row.className="placed-row";
+    var type=document.createElement("span");
+    type.className="placed-type";
+    type.textContent=toolLabel(f.type);
+    row.appendChild(type);
+    var nameInput=document.createElement("input");
+    nameInput.className="placed-name";
+    nameInput.type="text";
+    nameInput.value=f.name;
+    nameInput.setAttribute("aria-label","Field name");
+    nameInput.addEventListener("change",function(){
+      f.name=nameInput.value;
+      var div=overlayDivs[f.id];
+      if(div)positionOverlayDiv(div,f);
+    });
+    row.appendChild(nameInput);
+    var pg=document.createElement("span");
+    pg.className="placed-page";
+    pg.textContent="Page "+(f.page+1);
+    row.appendChild(pg);
+    if(f.type!=="checkbox"){
+      var fsInput=document.createElement("input");
+      fsInput.className="placed-font";
+      fsInput.type="number";
+      fsInput.min="8";fsInput.max="48";
+      fsInput.value=f.fontSize;
+      fsInput.title="Font size";
+      fsInput.setAttribute("aria-label","Font size");
+      fsInput.addEventListener("change",function(){
+        var v=parseInt(fsInput.value,10);
+        if(!isNaN(v)&&v>=8&&v<=48)f.fontSize=v;
+        else fsInput.value=f.fontSize;
+      });
+      row.appendChild(fsInput);
+    }
+    var del=document.createElement("button");
+    del.type="button";
+    del.className="placed-del";
+    del.textContent="✕ Remove";
+    del.addEventListener("click",function(){
+      placedFields=placedFields.filter(function(x){return x.id!==f.id;});
+      renderPlacedOverlays();
+      renderPlacedList();
+    });
+    row.appendChild(del);
+    placedList.appendChild(row);
+  });
+  placedCount.textContent=placedFields.length?("· "+placedFields.length+" placed"):"";
+  createBtn.disabled=!placedFields.length;
+}
+
+document.querySelectorAll(".toolbtn").forEach(function(btn){
+  btn.addEventListener("click",function(){
+    activeTool=btn.getAttribute("data-tool");
+    document.querySelectorAll(".toolbtn").forEach(function(b){
+      b.classList.toggle("active",b===btn);
+    });
+  });
+});
+builderPrev.addEventListener("click",async function(){
+  if(builderPage>0){builderPage--;await renderBuilderPage();}
+});
+builderNext.addEventListener("click",async function(){
+  if(builderPage<builderPageCount-1){builderPage++;await renderBuilderPage();}
+});
+addFieldsBtn.addEventListener("click",openBuilder);
+addFieldsBtn2.addEventListener("click",openBuilder);
+backBuilderBtn.addEventListener("click",closeBuilder);
+clearPlacedBtn.addEventListener("click",function(){
+  placedFields=[];
+  renderPlacedOverlays();
+  renderPlacedList();
+  setProgress("Placed fields cleared — click on the page to add new ones.");
+});
+window.addEventListener("resize",function(){
+  if(resizeTimer)clearTimeout(resizeTimer);
+  resizeTimer=setTimeout(function(){
+    if(builderArea.style.display!=="none"&&pdfjsDoc)renderBuilderPage();
+  },200);
+});
+
+createBtn.addEventListener("click",async function(){
+  if(!srcBytes||!placedFields.length)return;
+  createBtn.disabled=true;
+  showError("");
+  try{
+    if(!window.PDFLib)throw new Error("The PDF engine could not load. Check your connection and try again.");
+    setProgress("Loading document…",10);
+    var doc=await window.PDFLib.PDFDocument.load(srcBytes.slice());
+    var form=doc.getForm();
+    var byName={};
+    form.getFields().forEach(function(f){
+      try{byName[f.getName()]=f;}catch(e){}
+    });
+    /* Keep any answers already typed in the fill view. */
+    var res=applyAnswersToForm(form,byName);
+    setProgress("Adding your fields…",40);
+    var L=window.PDFLib;
+    var taken={};
+    Object.keys(byName).forEach(function(n){taken[n]=true;});
+    var added={text:0,checkbox:0,signature:0};
+    placedFields.forEach(function(pf){
+      var name=uniqueFieldName(sanitizeFieldName(pf.name)||defaultFieldName(pf.type),taken);
+      taken[name]=true;
+      var page=doc.getPage(pf.page);
+      var ps=page.getSize();
+      var rect={
+        x:pf.x*ps.width,
+        width:pf.w*ps.width,
+        height:pf.h*ps.height,
+        y:ps.height-(pf.y+pf.h)*ps.height
+      };
+      if(pf.type==="checkbox"){
+        var cb=form.createCheckBox(name);
+        cb.addToPage(page,{x:rect.x,y:rect.y,width:rect.width,height:rect.height,
+          textColor:L.rgb(0.65,0.49,0.18),borderColor:L.rgb(0.65,0.49,0.18),
+          backgroundColor:L.rgb(1,1,1),borderWidth:1});
+        added.checkbox++;
+      }else{
+        /* Signature fields are AcroForm text fields the signer types
+           into — pdf-lib has no API for creating digital-signature
+           fields, so a typed-name signature box is the honest option. */
+        var tf=form.createTextField(name);
+        tf.addToPage(page,{x:rect.x,y:rect.y,width:rect.width,height:rect.height,
+          textColor:L.rgb(0,0,0),borderColor:L.rgb(0.65,0.49,0.18),
+          backgroundColor:L.rgb(1,1,1),borderWidth:1});
+        var fs=parseInt(pf.fontSize,10);
+        if(!isNaN(fs)&&fs>=6&&fs<=72)tf.setFontSize(fs);
+        added[pf.type]++;
+      }
+    });
+    try{
+      var helvetica=await doc.embedFont(L.StandardFonts.Helvetica);
+      form.updateFieldAppearances(helvetica);
+    }catch(e){}
+    setProgress("Saving fillable PDF…",80);
+    var bytes=await doc.save();
+    outBlob=new Blob([bytes],{type:"application/pdf"});
+    outName=baseName(srcName)+"-fillable.pdf";
+    resultsTitle.textContent="Your fillable PDF is ready";
+    var total=added.text+added.checkbox+added.signature;
+    var parts=[];
+    if(added.text)parts.push(added.text+" text");
+    if(added.checkbox)parts.push(added.checkbox+" checkbox"+(added.checkbox===1?"":"es"));
+    if(added.signature)parts.push(added.signature+" signature");
+    var info=total+" field"+(total===1?"":"s")+" added"+(parts.length?" ("+parts.join(", ")+")":"");
+    if(res.applied)info+=" · "+res.applied+" existing answer"+(res.applied===1?"":"s")+" kept";
+    if(res.skipped.length)info+=" · "+res.skipped.length+" existing answer"+(res.skipped.length===1?"":"s")+" could not be written";
+    info+=" · "+fmt(bytes.length)+" · file: "+outName;
+    resultsInfo.textContent=info;
+    results.style.display="block";
+    setProgress("Done — your fillable PDF is ready to download.",100);
+    builderArea.scrollIntoView({behavior:"smooth",block:"start"});
+  }catch(e){
+    setProgress("Creating fields failed: "+(e&&e.message?e.message:e));
+  }finally{
+    createBtn.disabled=!placedFields.length;
+  }
+});
+
 downloadBtn.addEventListener("click",function(){
   if(outBlob)downloadBlob(outBlob,outName);
 });
 againBtn.addEventListener("click",function(){
   results.style.display="none";
   outBlob=null;
-  setProgress("Adjust your answers and click Fill & Download again.");
-  document.getElementById("formFields").scrollIntoView({behavior:"smooth",block:"start"});
+  setProgress("Adjust and create the PDF again.");
+  var target=builderArea.style.display!=="none"?builderArea:document.getElementById("formFields");
+  target.scrollIntoView({behavior:"smooth",block:"start"});
 });
 })();
 </script>
