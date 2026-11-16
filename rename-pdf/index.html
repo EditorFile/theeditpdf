@@ -1750,7 +1750,7 @@ _so=document.getElementById("completionStartOver"),
 _onStartOver=null,_src="editor";
 function _res(){return window.__TEP_lastResult||null}
 function _name(){var r=_res();return (r&&r.name)||"document.pdf"}
-function _applyName(n){n=(n||"").trim();if(!n)return;if(!/\.pdf$/i.test(n))n+=".pdf";var r=_res();if(r)r.name=n;if(_cf)_cf.textContent=n;var ef=document.getElementById("editorFileName");if(ef)ef.textContent=n}
+function _applyName(n){n=(n||"").trim();if(!n)return;var r=_res();var cur=/\.([a-z0-9]+)$/i.exec((r&&r.name)||"");if(!/\.[a-z0-9]+$/i.test(n))n+="."+(cur?cur[1].toLowerCase():"pdf");if(r)r.name=n;if(_cf)_cf.textContent=n;var ef=document.getElementById("editorFileName");if(ef)ef.textContent=n}
 function _showRename(){if(_rnRow){_rnRow.hidden=false;_rnInput.value=_name().replace(/\.pdf$/i,"");setTimeout(function(){try{_rnInput.focus();_rnInput.select()}catch(e){}},40)}}
 function _resetDl(){if(_dl){_dl.innerHTML="\u2b07\ufe0f Download";delete _dl.dataset.armed}if(_rnRow)_rnRow.hidden=true}
 async function _saveFlow(b,n){
