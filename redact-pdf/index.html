@@ -2672,7 +2672,16 @@ function countRecoverableChars(item, marks) {
 }
 
 async function verifyRedaction(pdfBytes, marksByPage, pdfjsLib, removedStrings) {
-  var doc = await pdfjsLib.getDocument({ data: pdfBytes }).promise;
+  /* FIX 2026-11-16: pdf.js transfers the buffer it receives to its worker,
+     DETACHING the caller's ArrayBuffer. The download handler passed the
+     redacted output bytes straight in here, so by the time downloadBlob()
+     ran afterwards the bytes were detached and `new Blob([bytes])` produced
+     a 0-byte file — while verification itself still passed (it ran on the
+     transferred copy). The page's own file-open code already knew this
+     ("copy: pdf.js may detach the buffer it receives") but the output
+     path did not. Verify a COPY; the caller's bytes stay intact. */
+  var verifyBytes = (pdfBytes && pdfBytes.slice) ? pdfBytes.slice() : pdfBytes;
+  var doc = await pdfjsLib.getDocument({ data: verifyBytes }).promise;
   var result = { pages: [], totalRecoverable: 0, annotations: 0, metadata: null, rawLeakCheck: { checked: [], found: [] }, textLeak: [] };
   var n = doc.numPages;
   for (var p = 1; p <= n; p++) {
