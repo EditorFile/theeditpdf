@@ -13,6 +13,7 @@
 - [Delete Pages](https://theeditpdf.com/delete-pages): Remove selected pages or page ranges from a PDF.
 - [Rotate PDF](https://theeditpdf.com/rotate-pdf): Rotate all PDF pages 90° clockwise, 90° counter-clockwise or 180°.
 - [Compress PDF](https://theeditpdf.com/compress-pdf): Reduce PDF file size with Smallest/Balanced/Sharper quality levels.
+- [Batch PDF Tools](https://theeditpdf.com/batch-pdf-tools): Compress and rename 50+ PDFs at once in your browser and download one ZIP — no upload, no daily limit, no signup.
 - [PDF to JPG](https://theeditpdf.com/pdf-to-jpg): Convert every PDF page to a JPG image, delivered as a ZIP.
 - [JPG to PDF](https://theeditpdf.com/jpg-to-pdf): Combine JPG/PNG images into a single PDF.
 - [Watermark PDF](https://theeditpdf.com/watermark-pdf): Stamp diagonal text watermarks (e.g. DRAFT, CONFIDENTIAL) with adjustable opacity and size.
