@@ -29,7 +29,10 @@
 {"@type":"Question","name":"What DPI should I choose?","acceptedAnswer":{"@type":"Answer","text":"72 DPI is fine for web use and small files. 150 DPI gives sharp images for documents and presentations. 300 DPI is print quality — best for publishing, but the files are larger."}},
 {"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion runs 100% in your browser using pdf.js. Your file never leaves your device."}},
 {"@type":"Question","name":"Can I convert only some pages?","acceptedAnswer":{"@type":"Answer","text":"Yes. After conversion, download only the pages you need — each PNG has its own download button. Or use the ZIP to grab everything at once."}},
-{"@type":"Question","name":"Does it work on mobile?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tool works on any modern browser, including phones and tablets. Very large PDFs may be slower on older devices."}}
+{"@type":"Question","name":"Does it work on mobile?","acceptedAnswer":{"@type":"Answer","text":"Yes. The tool works on any modern browser, including phones and tablets. Very large PDFs may be slower on older devices."}},
+{"@type": "Question", "name": "Can I copy text from the PNG images?", "acceptedAnswer": {"@type": "Answer", "text": "No. Each PNG is a picture of the page, so the text inside it is pixels, not selectable text. If you need the words themselves, use PDF to Text to pull the text out of the PDF instead."}},
+{"@type": "Question", "name": "Is there a file size limit?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. PDFs larger than 50MB are rejected with an error message. If your file is too big, shrink it first with Compress PDF, then convert it here."}},
+{"@type": "Question", "name": "What are the downloaded files called?", "acceptedAnswer": {"@type": "Answer", "text": "Each image downloads as page-1.png, page-2.png, and so on. If you download everything at once, the ZIP file is named after your PDF - for example, report-png.zip."}}
 ]}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -144,7 +147,11 @@ footer a{color:var(--gold);text-decoration:none}
 </div>
 </div>
 
-<section> <h2>How to convert PDF pages to PNG images</h2> <p>Sometimes you don't need the whole PDF — you need one page as a picture. Converting pages to PNG images makes them easy to share, paste, and post anywhere images work.</p> <ol> <li>Open the tool — Open the PDF to PNG tool in your browser. It works on desktop and on your phone, with nothing to install.</li> <li>Choose your PDF — Select the file from your device. It opens locally in your browser, so your document is never uploaded to a server.</li> <li>Convert the pages — Start the conversion and the tool turns each page into a PNG image, right in your browser. Text, charts, and diagrams come across as they appear on the page.</li> <li>Download the images — Download the PNG files and use them wherever you need them. Your original PDF stays untouched on your device, so you can convert it again any time.</li> </ol> <h2>When to use it</h2> <ul> <li>Sharing a page as an image — Some chats and email apps preview images but not PDFs. Sending a page as a PNG means the other person sees it immediately, with no download or viewer needed.</li> <li>Presentations — Drop a page from a report or a chart into your slides as an image, instead of rebuilding the slide from scratch.</li> <li>Social posts — A striking page, quote, or infographic from a PDF becomes a post-ready image you can share directly.</li> <li>Design work — Use a PDF page as an image asset in a poster, flyer, or mockup, without screenshotting and cropping by hand.</li> </ul> </section> <div class="faq">
+<section> <h2>How to convert PDF pages to PNG images</h2> <p>Sometimes you don't need the whole PDF — you need one page as a picture. Converting pages to PNG images makes them easy to share, paste, and post anywhere images work.</p> <ol> <li>Open the tool — Open the PDF to PNG tool in your browser. It works on desktop and on your phone, with nothing to install.</li> <li>Choose your PDF — Select the file from your device. It opens locally in your browser, so your document is never uploaded to a server.</li> <li>Convert the pages — Start the conversion and the tool turns each page into a PNG image, right in your browser. Text, charts, and diagrams come across as they appear on the page.</li> <li>Download the images — Download the PNG files and use them wherever you need them. Your original PDF stays untouched on your device, so you can convert it again any time.</li> </ol> <h2>When to use it</h2> <ul> <li>Sharing a page as an image — Some chats and email apps preview images but not PDFs. Sending a page as a PNG means the other person sees it immediately, with no download or viewer needed.</li> <li>Presentations — Drop a page from a report or a chart into your slides as an image, instead of rebuilding the slide from scratch.</li> <li>Social posts — A striking page, quote, or infographic from a PDF becomes a post-ready image you can share directly.</li> <li>Design work — Use a PDF page as an image asset in a poster, flyer, or mockup, without screenshotting and cropping by hand.</li> </ul>   <h2>What exactly does PDF to PNG do?</h2>
+  <p>PDF to PNG renders every page of your PDF as a PNG picture at the DPI you choose: 72 for web, 150 for documents, or 300 for print. Because each page becomes a picture, its text is no longer selectable or copyable. PDFs up to 50MB are accepted, and you can download pages one by one or as a ZIP.</p>
+  <p>Related tools: <a href="/pdf-to-jpg">PDF to JPG</a> converts pages to JPG images instead; <a href="/extract-images-from-pdf">Extract Images from PDF</a> pulls the photos and graphics already inside a PDF out as PNGs; <a href="/png-to-pdf">PNG to PDF</a> turns images back into a PDF.</p>
+
+</section> <div class="faq">
 <h2>Frequently Asked Questions</h2>
 <div class="faq-item">
 <p class="faq-q">How do I convert a PDF to PNG?</p>
@@ -161,6 +168,18 @@ footer a{color:var(--gold);text-decoration:none}
 <div class="faq-item">
 <p class="faq-q">Can I convert only some pages?</p>
 <p>Yes. After conversion, download only the pages you need — each PNG has its own download button. Or use the ZIP to grab everything at once.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Can I copy text from the PNG images?</p>
+<p>No. Each PNG is a picture of the page, so the text inside it is pixels, not selectable text. If you need the words themselves, use <a href="/pdf-to-text">PDF to Text</a> to pull the text out of the PDF instead.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Is there a file size limit?</p>
+<p>Yes. PDFs larger than 50MB are rejected with an error message. If your file is too big, shrink it first with <a href="/compress-pdf">Compress PDF</a>, then convert it here.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">What are the downloaded files called?</p>
+<p>Each image downloads as page-1.png, page-2.png, and so on. If you download everything at once, the ZIP file is named after your PDF - for example, report-png.zip.</p>
 </div>
 <div class="faq-item">
 <p class="faq-q">Does it work on mobile?</p>
