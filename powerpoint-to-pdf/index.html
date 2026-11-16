@@ -973,9 +973,13 @@ function _slideShapesFromXml(slideXml, rels, zip, baseDir) {
     /* Skip placeholders that carry no text (e.g. empty title slots). */
     var paras = _parseTxBody(tx[1]);
     if (!paras.length) continue;
+    /* Placeholder kind (title/body): needed for the no-geometry fallback
+       in parsePptx — python-pptx and other producers emit <p:spPr/> with
+       no <a:xfrm>, leaving the real geometry in the slide layout. */
+    var phM = spXml.match(/<p:ph[^>]*type="([^"]+)"/);
     shapes.push({
       type: "text", x: geom.x, y: geom.y, w: geom.w, h: geom.h,
-      fill: geom.fill, paras: paras,
+      fill: geom.fill, paras: paras, ph: phM ? phM[1] : null,
     });
   }
   /* Pictures */
@@ -1101,6 +1105,21 @@ async function parsePptx(zip) {
       shapes[q].kind = _sniffImage(shapes[q].bytes);
       if (!shapes[q].kind) shapes[q].type = "skip";
     }
+    /* Fallback geometry for text shapes with no <a:xfrm> (empty <p:spPr/>):
+       without it renderPptxToPdf skips the shape (w/h 0) and the slide
+       comes out blank. Title placeholders go at the top, body/content
+       shapes stack below; width is the full slide minus 0.5" margins. */
+    var _fbY = 36;
+    shapes.forEach(function (sh) {
+      if (sh.type !== "text" || (sh.w && sh.h)) return;
+      var _isTitle = sh.ph === "title" || sh.ph === "ctrTitle";
+      if (!sh.x) sh.x = 36;
+      if (!sh.w) sh.w = Math.max(72, widthPt - sh.x - 36);
+      if (!sh.h) {
+        if (_isTitle) { sh.y = 36; sh.h = 72; if (_fbY < 120) _fbY = 120; }
+        else { sh.y = _fbY; sh.h = Math.max(72, heightPt - _fbY - 36); _fbY += sh.h + 12; }
+      }
+    });
     slides.push({ bg: bg, shapes: shapes.filter(function (sh) { return sh.type !== "skip"; }) });
   }
   if (!slides.length) throw new Error("No slides were found in this presentation.");
