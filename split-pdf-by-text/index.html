@@ -280,7 +280,9 @@ if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded"
 "use strict";
 
 async function getPageTexts(bytes,pdfjsLib){
-  var pdfDoc=await pdfjsLib.getDocument({data:bytes}).promise;
+  // Hand pdf.js a COPY: it transfers (detaches) the buffer to its worker,
+  // and splitByText still needs the original bytes for PDFDocument.load below.
+  var pdfDoc=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
   var texts=[];
   for(var i=1;i<=pdfDoc.numPages;i++){
     var page=await pdfDoc.getPage(i);
