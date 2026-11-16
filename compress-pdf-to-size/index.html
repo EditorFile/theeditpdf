@@ -26,8 +26,8 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
 {"@type":"Question","name":"How do I compress a PDF to exactly 100KB?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, select 100KB as the target size, and click Compress. The tool iteratively reduces image quality until the file fits under 100KB, then lets you download the result."}},
-{"@type":"Question","name":"Will compressing to 100KB ruin my PDF quality?","acceptedAnswer":{"@type":"Answer","text":"Smaller targets mean more compression. Text-heavy PDFs compress well with little visible loss. Image-heavy PDFs at 100KB will show softer images. Try 200KB or 500KB if quality matters more than size."}},
-{"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. All compression runs 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device."}},
+{"@type":"Question","name":"Will compressing to 100KB ruin my PDF quality?","acceptedAnswer":{"@type":"Answer","text":"No — your text is never touched, so it stays perfectly sharp at any target. Only embedded images are downscaled and re-encoded, so image-heavy PDFs at 100KB will show softer images. If your PDF is mostly text with few images, there may be little to shrink — the tool will tell you honestly instead of damaging the text. Try 200KB or 500KB if image quality matters more than size."}},
+{"@type":"Question","name":"Is my PDF uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. All compression runs 100% in your browser using pdf-lib. Your file never leaves your device."}},
 {"@type":"Question","name":"What if my PDF cannot reach the target size?","acceptedAnswer":{"@type":"Answer","text":"The tool tries progressively stronger compression and reports the smallest size it achieved. If even maximum compression exceeds your target, it shows the best result and suggests a larger target."}},
 {"@type":"Question","name":"Can I compress a PDF to a custom size?","acceptedAnswer":{"@type":"Answer","text":"Yes. Choose Custom and enter any size in KB — for example 150KB, 300KB, or 750KB."}}
 ]}
@@ -184,11 +184,11 @@ header.tesw-bar{position:-webkit-sticky;position:sticky;top:0;z-index:9999;displ
 </div>
 <div class="faq-item">
 <p class="faq-q">Will compressing to 100KB ruin my PDF quality?</p>
-<p>Smaller targets mean more compression. Text-heavy PDFs compress well with little visible loss. Image-heavy PDFs at 100KB will show softer images. Try 200KB or 500KB if quality matters more than size.</p>
+<p>No — your text is never touched, so it stays perfectly sharp at any target. Only embedded images are downscaled and re-encoded, so image-heavy PDFs at 100KB will show softer images. If your PDF is mostly text with few images, there may be little to shrink — the tool will tell you honestly instead of damaging the text. Try 200KB or 500KB if image quality matters more than size.</p>
 </div>
 <div class="faq-item">
 <p class="faq-q">Is my PDF uploaded to a server?</p>
-<p>No. All compression runs 100% in your browser using pdf-lib and pdf.js. Your file never leaves your device.</p>
+<p>No. All compression runs 100% in your browser using pdf-lib. Your file never leaves your device.</p>
 </div>
 <div class="faq-item">
 <p class="faq-q">What if my PDF cannot reach the target size?</p>
@@ -207,7 +207,6 @@ header.tesw-bar{position:-webkit-sticky;position:sticky;top:0;z-index:9999;displ
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 (function(){
 'use strict';
@@ -305,82 +304,425 @@ customKBInput.addEventListener('input', function(){
 });
 
 // --- Compression engine ---
-// Strategy: iterative quality reduction.
-// Level 0: pdf-lib copy + metadata strip (lossless-ish).
-// Levels 1-5: rasterize pages at decreasing DPI via pdf.js, rebuild as image-only PDF.
-// Each level produces a candidate; we stop at the first one under target.
-// If none fits, we return the smallest candidate.
-async function compressToTarget(srcBytes, targetBytes, onProgress){
-  var PDFLib = window.PDFLib;
-  var pdfjsLib = window.pdfjsLib;
-  if(!PDFLib) throw new Error('PDF engine failed to load. Check your connection and try again.');
-  
-  // Level 0: lossless copy + metadata strip
-  onProgress(10, 'Trying lossless compression…');
+// (PDFLib is the global pdf-lib namespace; helpers below share it.)
+var PDFLib = window.PDFLib;
+// Strategy: NEVER rasterize pages. Only embedded images are downscaled and
+// re-encoded; text, vector graphics and links are copied untouched, so the
+// output always keeps its selectable text layer.
+// Level 0: pdf-lib re-save + metadata strip (lossless-ish).
+// Levels 1-6: re-encode every embedded image XObject at a smaller max
+// dimension and lower JPEG quality, then re-save. Each level starts from the
+// ORIGINAL bytes (never from the previous level's output, so quality never
+// compounds) and produces a candidate; we stop at the first one under target.
+// An image is only replaced when its re-encoded bytes are actually smaller
+// than the stored bytes, so flat graphics that JPEG would bloat stay as-is.
+// If no level reaches the target, we return the smallest candidate and the UI
+// says so honestly — text is never destroyed to hit a number.
+var COMPRESS_LEVELS = [
+  { maxDim: 1600, quality: 0.85, label: 'High quality' },
+  { maxDim: 1200, quality: 0.75, label: 'Balanced' },
+  { maxDim: 900,  quality: 0.65, label: 'Compact' },
+  { maxDim: 700,  quality: 0.55, label: 'Small' },
+  { maxDim: 500,  quality: 0.45, label: 'Smaller' },
+  { maxDim: 320,  quality: 0.35, label: 'Smallest' }
+];
+
+function stripMetadata(doc, PDFLib){
+  try { doc.setTitle(''); } catch(e){}
+  try { doc.setAuthor(''); } catch(e){}
+  try { doc.setSubject(''); } catch(e){}
+  try { doc.setKeywords([]); } catch(e){}
+  doc.setProducer('The Edit PDF');
+  doc.setCreator('The Edit PDF');
+  // Drop the XMP metadata stream as well (info-dict fields alone leave it).
   try {
-    var srcDoc = await PDFLib.PDFDocument.load(srcBytes.slice());
-    srcDoc.setTitle('');
-    srcDoc.setAuthor('');
-    srcDoc.setSubject('');
-    srcDoc.setKeywords([]);
-    srcDoc.setProducer('The Edit PDF');
-    srcDoc.setCreator('The Edit PDF');
-    var out0 = await srcDoc.save();
-    if(out0.length <= targetBytes){
-      return { bytes: out0, level: 0, quality: 'lossless' };
+    if(doc.catalog && doc.catalog.delete) doc.catalog.delete(PDFLib.PDFName.of('Metadata'));
+  } catch(e){}
+}
+
+function filterNames(dict){
+  var f = dict.lookup(PDFLib.PDFName.of('Filter'));
+  if(!f) return [];
+  if(f instanceof PDFLib.PDFName) return [f.asString().replace(/^\//, '')];
+  if(f instanceof PDFLib.PDFArray){
+    var out = [];
+    var arr = f.asArray();
+    for(var i = 0; i < arr.length; i++){
+      if(arr[i] instanceof PDFLib.PDFName) out.push(arr[i].asString().replace(/^\//, ''));
     }
-    // Keep as fallback candidate
-    var best = { bytes: out0, level: 0, quality: 'lossless' };
-    
-    // Levels 1-5: rasterize at decreasing DPI
-    if(!pdfjsLib) return best;
-    var levels = [
-      { dpi: 200, jpeg: 0.85, label: 'High quality' },
-      { dpi: 150, jpeg: 0.75, label: 'Balanced' },
-      { dpi: 120, jpeg: 0.65, label: 'Compact' },
-      { dpi: 96,  jpeg: 0.50, label: 'Small' },
-      { dpi: 72,  jpeg: 0.35, label: 'Smallest' }
-    ];
-    var pdfDoc = await pdfjsLib.getDocument({ data: srcBytes.slice() }).promise;
-    var numPages = pdfDoc.numPages;
-    
-    for(var li = 0; li < levels.length; li++){
-      var lv = levels[li];
-      onProgress(15 + Math.round((li / levels.length) * 75),
-        'Trying ' + lv.label + ' (DPI ' + lv.dpi + ')…');
-      try {
-        var newDoc = await PDFLib.PDFDocument.create();
-        for(var p = 1; p <= numPages; p++){
-          var page = await pdfDoc.getPage(p);
-          var vp = page.getViewport({ scale: lv.dpi / 72 });
-          var canvas = document.createElement('canvas');
-          canvas.width = Math.round(vp.width);
-          canvas.height = Math.round(vp.height);
-          var ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          await page.render({ canvasContext: ctx, viewport: vp }).promise;
-          var dataUrl = canvas.toDataURL('image/jpeg', lv.jpeg);
-          var imgBytes = dataUrlToBytes(dataUrl);
-          var img = await newDoc.embedJpg(imgBytes);
-          var pg = newDoc.addPage([vp.width, vp.height]);
-          pg.drawImage(img, { x: 0, y: 0, width: vp.width, height: vp.height });
-          page.cleanup();
-        }
-        var out = await newDoc.save();
-        if(out.length < best.bytes.length) best = { bytes: out, level: li + 1, quality: lv.label };
-        if(out.length <= targetBytes){
-          return { bytes: out, level: li + 1, quality: lv.label };
-        }
-      } catch(e) {
-        // Skip this level on error, try next
+    return out;
+  }
+  return [];
+}
+
+function numValue(dict, name, fallback){
+  var v = dict.lookup(PDFLib.PDFName.of(name));
+  if(v && typeof v.asNumber === 'function') return v.asNumber();
+  return fallback;
+}
+
+// Walk page resources (recursing into Form XObjects) and collect unique
+// image XObjects. Returns [{ ref, refKey, stream, width, height }].
+// 1-bit image masks are skipped: they are tiny and cannot be JPEG-encoded.
+function collectImages(doc){
+  var seen = {};
+  var found = [];
+  function walkResources(resDict){
+    if(!resDict || !(resDict instanceof PDFLib.PDFDict)) return;
+    var xobj = resDict.lookup(PDFLib.PDFName.of('XObject'));
+    if(!xobj) return;
+    var xobjDict = (xobj instanceof PDFLib.PDFDict) ? xobj : doc.context.lookup(xobj);
+    if(!xobjDict || !(xobjDict instanceof PDFLib.PDFDict)) return;
+    var keys = xobjDict.keys();
+    for(var i = 0; i < keys.length; i++){
+      var ref = xobjDict.get(keys[i]);
+      if(!(ref instanceof PDFLib.PDFRef)) continue;
+      var key = ref.tag;
+      if(seen[key]) continue;
+      seen[key] = true;
+      var obj = doc.context.lookup(ref);
+      if(!obj || !obj.dict) continue;
+      var subtype = obj.dict.lookup(PDFLib.PDFName.of('Subtype'));
+      var subtypeName = (subtype && subtype.asString) ? subtype.asString() : '';
+      if(subtypeName === '/Form'){
+        var sub = obj.dict.lookup(PDFLib.PDFName.of('Resources'));
+        var subDict = (sub instanceof PDFLib.PDFDict) ? sub : doc.context.lookup(sub);
+        walkResources(subDict);
         continue;
       }
+      if(subtypeName !== '/Image') continue;
+      var isMask = obj.dict.lookup(PDFLib.PDFName.of('ImageMask'));
+      if(isMask === PDFLib.PDFBool.True) continue;
+      found.push({
+        ref: ref,
+        refKey: key,
+        stream: obj,
+        width: numValue(obj.dict, 'Width', 0),
+        height: numValue(obj.dict, 'Height', 0)
+      });
     }
-    return best;
-  } catch(e) {
-    throw new Error('Compression failed: ' + (e.message || e));
   }
+  var pages = doc.getPages();
+  for(var p = 0; p < pages.length; p++){
+    var res = pages[p].node.Resources();
+    if(!res) continue;
+    var resDict = (res instanceof PDFLib.PDFDict) ? res : doc.context.lookup(res);
+    walkResources(resDict);
+  }
+  return found;
+}
+
+// Decode a stream whose filter chain contains only ASCII85/ASCIIHex, Flate
+// or LZW layers (no image-format filters). Returns Uint8Array or null.
+function decodeSimpleStream(dict, contents){
+  try {
+    var s = PDFLib.decodePDFRawStream({ dict: dict, contents: contents });
+    if(s && typeof s.decode === 'function') return s.decode();
+    if(s && typeof s.getBytes === 'function') return s.getBytes();
+  } catch(e){ /* unsupported filter */ }
+  return null;
+}
+
+// Undo PNG/TIFF predictors (pdf-lib's Flate decoder does not apply them).
+// Returns raw sample bytes, or null when the predictor is unsupported.
+function applyPredictor(bytes, columns, colors, bpc, predictor){
+  if(!predictor || predictor === 1) return bytes;
+  var rowSize = Math.ceil((columns * colors * bpc) / 8);
+  if(predictor === 2){
+    // TIFF predictor: each sample differs from the same component of the
+    // previous pixel in the row.
+    var out = new Uint8Array(bytes.length);
+    var step = colors * Math.ceil(bpc / 8);
+    for(var i = 0; i < bytes.length; i++){
+      var left = (i % rowSize) >= step ? out[i - step] : 0;
+      out[i] = (bytes[i] + left) & 0xff;
+    }
+    return out;
+  }
+  if(predictor >= 10 && predictor <= 15){
+    // PNG optimum: every row starts with a filter-type byte.
+    var rows = Math.floor(bytes.length / (rowSize + 1));
+    var out2 = new Uint8Array(rows * rowSize);
+    var prev = new Uint8Array(rowSize);
+    var bpp = Math.max(1, Math.floor((colors * bpc) / 8));
+    var pos = 0;
+    for(var r = 0; r < rows; r++){
+      var type = bytes[pos++];
+      var row = bytes.subarray(pos, pos + rowSize);
+      pos += rowSize;
+      var cur = new Uint8Array(rowSize);
+      for(var x = 0; x < rowSize; x++){
+        var a = x >= bpp ? cur[x - bpp] : 0;
+        var b = prev[x];
+        var c = x >= bpp ? prev[x - bpp] : 0;
+        var v = row[x];
+        if(type === 0) cur[x] = v;
+        else if(type === 1) cur[x] = (v + a) & 0xff;
+        else if(type === 2) cur[x] = (v + b) & 0xff;
+        else if(type === 3) cur[x] = (v + ((a + b) >> 1)) & 0xff;
+        else if(type === 4){
+          var pp = a + b - c;
+          var pa = Math.abs(pp - a), pb = Math.abs(pp - b), pc = Math.abs(pp - c);
+          var pr = (pa <= pb && pa <= pc) ? a : (pb <= pc ? b : c);
+          cur[x] = (v + pr) & 0xff;
+        } else { return null; }
+      }
+      out2.set(cur, r * rowSize);
+      prev = cur;
+    }
+    return out2;
+  }
+  return null;
+}
+
+// Turn raw sample bytes into RGBA pixels. Supports 8bpc RGB / Gray / CMYK.
+// Returns { rgba, width, height } or null.
+function samplesToRgba(samples, width, height, colors, bpc){
+  if(bpc !== 8) return null;
+  var count = width * height;
+  var rgba = new Uint8ClampedArray(count * 4);
+  var i, g, c, m, y, kk;
+  if(colors === 3){
+    for(i = 0; i < count; i++){
+      rgba[i*4]   = samples[i*3];
+      rgba[i*4+1] = samples[i*3+1];
+      rgba[i*4+2] = samples[i*3+2];
+      rgba[i*4+3] = 255;
+    }
+  } else if(colors === 1){
+    for(i = 0; i < count; i++){
+      g = samples[i];
+      rgba[i*4] = g; rgba[i*4+1] = g; rgba[i*4+2] = g; rgba[i*4+3] = 255;
+    }
+  } else if(colors === 4){
+    for(i = 0; i < count; i++){
+      c = samples[i*4] / 255; m = samples[i*4+1] / 255;
+      y = samples[i*4+2] / 255; kk = samples[i*4+3] / 255;
+      rgba[i*4]   = Math.round(255 * (1 - c) * (1 - kk));
+      rgba[i*4+1] = Math.round(255 * (1 - m) * (1 - kk));
+      rgba[i*4+2] = Math.round(255 * (1 - y) * (1 - kk));
+      rgba[i*4+3] = 255;
+    }
+  } else {
+    return null;
+  }
+  return { rgba: rgba, width: width, height: height };
+}
+
+// DecodeParms for a given filter in the chain (dict, or one entry of an
+// array when the chain has per-filter parms).
+function decodeParmsFor(dict, filters, wantedFilter){
+  var parms = dict.lookup(PDFLib.PDFName.of('DecodeParms'));
+  if(!parms) return null;
+  var idx = filters.indexOf(wantedFilter);
+  if(parms instanceof PDFLib.PDFArray){
+    var arr = parms.asArray();
+    var one = arr[Math.max(0, idx)];
+    return (one instanceof PDFLib.PDFDict) ? one : null;
+  }
+  return (parms instanceof PDFLib.PDFDict) ? parms : null;
+}
+
+// Decode one embedded image into something a canvas can draw.
+// Returns { kind:'jpeg', bytes, width, height } for JPEG images,
+// { kind:'raw', rgba, width, height } for Flate/LZW raster images,
+// or null when the image cannot be decoded (it is left untouched).
+async function decodeImageForReencode(doc, img){
+  var dict = img.stream.dict;
+  var filters = filterNames(dict);
+  var lastFilter = filters.length ? filters[filters.length - 1] : '';
+  if(lastFilter === 'DCTDecode'){
+    // JPEG data, possibly wrapped in ASCII85/ASCIIHex layers.
+    var asciiFilters = filters.slice(0, filters.length - 1);
+    if(asciiFilters.length === 0){
+      return { kind: 'jpeg', bytes: img.stream.getContents().slice(), width: img.width, height: img.height };
+    }
+    // Re-decode just the ASCII layers via pdf-lib.
+    var tmpDict = PDFLib.PDFDict.withContext(doc.context);
+    if(asciiFilters.length === 1){
+      tmpDict.set(PDFLib.PDFName.of('Filter'), PDFLib.PDFName.of(asciiFilters[0]));
+    } else {
+      var arr = PDFLib.PDFArray.withContext(doc.context);
+      for(var i = 0; i < asciiFilters.length; i++) arr.push(PDFLib.PDFName.of(asciiFilters[i]));
+      tmpDict.set(PDFLib.PDFName.of('Filter'), arr);
+    }
+    var bytes = decodeSimpleStream(tmpDict, img.stream.getContents());
+    if(!bytes || bytes.length < 2 || bytes[0] !== 0xFF || bytes[1] !== 0xD8) return null;
+    return { kind: 'jpeg', bytes: bytes, width: img.width, height: img.height };
+  }
+  if(lastFilter === 'FlateDecode' || lastFilter === 'LZWDecode' || lastFilter === ''){
+    var decoded = decodeSimpleStream(dict, img.stream.getContents());
+    if(!decoded) return null;
+    var parms = decodeParmsFor(dict, filters, lastFilter || 'FlateDecode');
+    var predictor = parms ? numValue(parms, 'Predictor', 1) : 1;
+    var colors = parms ? numValue(parms, 'Colors', 0) : 0;
+    var bpc = parms ? numValue(parms, 'BitsPerComponent', 0) : 0;
+    var columns = parms ? numValue(parms, 'Columns', 0) : 0;
+    if(!bpc) bpc = numValue(dict, 'BitsPerComponent', 8);
+    if(!columns) columns = img.width;
+    if(!colors){
+      var cs = dict.lookup(PDFLib.PDFName.of('ColorSpace'));
+      var csName = (cs && cs.asString) ? cs.asString() : '';
+      if(csName === '/DeviceRGB') colors = 3;
+      else if(csName === '/DeviceGray') colors = 1;
+      else if(csName === '/DeviceCMYK') colors = 4;
+      else return null; // Indexed / ICC / other: leave untouched
+    }
+    var samples = applyPredictor(decoded, columns, colors, bpc, predictor);
+    if(!samples) return null;
+    var rgba = samplesToRgba(samples, img.width, img.height, colors, bpc);
+    if(!rgba) return null;
+    return { kind: 'raw', rgba: rgba.rgba, width: img.width, height: img.height };
+  }
+  // JPXDecode / CCITTFaxDecode / JBIG2Decode: cannot decode here — leave untouched.
+  return null;
+}
+
+// Draw the decoded image onto a canvas at the level's max dimension and
+// return fresh JPEG bytes. Never upscales.
+async function reencodeImage(src, maxDim, quality){
+  var scale = Math.min(1, maxDim / Math.max(src.width, src.height));
+  var w = Math.max(1, Math.round(src.width * scale));
+  var h = Math.max(1, Math.round(src.height * scale));
+  var canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  if(src.kind === 'jpeg'){
+    var drawn = false;
+    if(window.createImageBitmap){
+      try {
+        var bmp = await createImageBitmap(new Blob([src.bytes], { type: 'image/jpeg' }));
+        ctx.drawImage(bmp, 0, 0, w, h);
+        if(bmp.close) bmp.close();
+        drawn = true;
+      } catch(e){ drawn = false; }
+    }
+    if(!drawn){
+      var img = await loadImageFromBytes(src.bytes, 'image/jpeg');
+      ctx.drawImage(img, 0, 0, w, h);
+    }
+  } else {
+    var srcCanvas = document.createElement('canvas');
+    srcCanvas.width = src.width;
+    srcCanvas.height = src.height;
+    var sctx = srcCanvas.getContext('2d');
+    sctx.putImageData(new ImageData(src.rgba, src.width, src.height), 0, 0);
+    ctx.drawImage(srcCanvas, 0, 0, w, h);
+  }
+  var bytes = await canvasToJpegBytes(canvas, quality);
+  return { bytes: bytes, width: w, height: h };
+}
+
+function loadImageFromBytes(bytes, mime){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+    var img = new Image();
+    img.onload = function(){ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('Image could not be decoded.')); };
+    img.src = url;
+  });
+}
+
+function canvasToJpegBytes(canvas, quality){
+  return new Promise(function(resolve, reject){
+    if(canvas.toBlob){
+      canvas.toBlob(function(blob){
+        if(!blob){ reject(new Error('Image encoding failed.')); return; }
+        var reader = new FileReader();
+        reader.onload = function(){ resolve(new Uint8Array(reader.result)); };
+        reader.onerror = function(){ reject(new Error('Image encoding failed.')); };
+        reader.readAsArrayBuffer(blob);
+      }, 'image/jpeg', quality);
+    } else {
+      try { resolve(dataUrlToBytes(canvas.toDataURL('image/jpeg', quality))); }
+      catch(e){ reject(new Error('Image encoding failed.')); }
+    }
+  });
+}
+
+// Swap one image XObject's data for freshly encoded JPEG bytes, keeping the
+// same object reference — every page that used the image keeps using it.
+function replaceImage(doc, img, encoded){
+  var dict = PDFLib.PDFDict.withContext(doc.context);
+  dict.set(PDFLib.PDFName.of('Type'), PDFLib.PDFName.of('XObject'));
+  dict.set(PDFLib.PDFName.of('Subtype'), PDFLib.PDFName.of('Image'));
+  dict.set(PDFLib.PDFName.of('Width'), PDFLib.PDFNumber.of(encoded.width));
+  dict.set(PDFLib.PDFName.of('Height'), PDFLib.PDFNumber.of(encoded.height));
+  dict.set(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFName.of('DeviceRGB'));
+  dict.set(PDFLib.PDFName.of('BitsPerComponent'), PDFLib.PDFNumber.of(8));
+  dict.set(PDFLib.PDFName.of('Filter'), PDFLib.PDFName.of('DCTDecode'));
+  dict.set(PDFLib.PDFName.of('Length'), PDFLib.PDFNumber.of(encoded.bytes.length));
+  // Keep the soft mask (transparency) and interpolation flag, if any.
+  var oldDict = img.stream.dict;
+  var smask = oldDict.get(PDFLib.PDFName.of('SMask'));
+  if(smask) dict.set(PDFLib.PDFName.of('SMask'), smask);
+  var interp = oldDict.get(PDFLib.PDFName.of('Interpolate'));
+  if(interp) dict.set(PDFLib.PDFName.of('Interpolate'), interp);
+  doc.context.assign(img.ref, PDFLib.PDFRawStream.of(dict, encoded.bytes));
+}
+
+async function compressToTarget(srcBytes, targetBytes, onProgress){
+  var PDFLib = window.PDFLib;
+  if(!PDFLib) throw new Error('PDF engine failed to load. Check your connection and try again.');
+
+  // Level 0: lossless re-save + metadata strip.
+  onProgress(10, 'Trying lossless compression…');
+  var baseDoc = await PDFLib.PDFDocument.load(srcBytes.slice());
+  stripMetadata(baseDoc, PDFLib);
+  var out0 = await baseDoc.save();
+  var images0 = collectImages(baseDoc);
+  var best = { bytes: out0, level: 0, quality: 'lossless', imagesFound: images0.length, imagesCompressed: 0, targetMet: out0.length <= targetBytes };
+  if(best.targetMet) return best;
+
+  // Decode each embedded image ONCE from the original; every level
+  // re-encodes from this same decoded source.
+  var decodedCache = {};
+  async function decodedSource(doc, img){
+    if(decodedCache[img.refKey] === undefined){
+      var src = null;
+      try { src = await decodeImageForReencode(doc, img); } catch(e){ src = null; }
+      decodedCache[img.refKey] = src;
+    }
+    return decodedCache[img.refKey];
+  }
+
+  for(var li = 0; li < COMPRESS_LEVELS.length; li++){
+    var lv = COMPRESS_LEVELS[li];
+    onProgress(15 + Math.round((li / COMPRESS_LEVELS.length) * 75),
+      'Trying ' + lv.label + ' — images max ' + lv.maxDim + 'px, JPEG ' + Math.round(lv.quality * 100) + '%…');
+    try {
+      var doc = await PDFLib.PDFDocument.load(srcBytes.slice());
+      stripMetadata(doc, PDFLib);
+      var imgs = collectImages(doc);
+      var compressedCount = 0;
+      for(var k = 0; k < imgs.length; k++){
+        var im = imgs[k];
+        var src = await decodedSource(doc, im);
+        if(!src) continue;
+        var enc = await reencodeImage(src, lv.maxDim, lv.quality);
+        // Only swap when the re-encoded image is actually smaller than the
+        // stored one — JPEG would only bloat flat graphics.
+        if(enc.bytes.length < im.stream.getContents().length){
+          replaceImage(doc, im, enc);
+          compressedCount++;
+        }
+      }
+      var out = await doc.save();
+      if(out.length < best.bytes.length){
+        best = { bytes: out, level: li + 1, quality: lv.label, imagesFound: imgs.length, imagesCompressed: compressedCount, targetMet: out.length <= targetBytes };
+      }
+      if(out.length <= targetBytes){
+        return { bytes: out, level: li + 1, quality: lv.label, imagesFound: imgs.length, imagesCompressed: compressedCount, targetMet: true };
+      }
+    } catch(e) {
+      // Skip this level on error, try the next (stronger) one.
+      continue;
+    }
+  }
+  return best;
 }
 
 function dataUrlToBytes(dataUrl){
@@ -391,6 +733,9 @@ function dataUrlToBytes(dataUrl){
   for(var i = 0; i < len; i++) arr[i] = binary.charCodeAt(i);
   return arr;
 }
+
+// Exposed for automated tests (no UI effect).
+window.__compressToTarget = compressToTarget;
 
 // --- Compress button ---
 compressBtn.addEventListener('click', async function(){
@@ -424,11 +769,27 @@ compressBtn.addEventListener('click', async function(){
     var pct = Math.round((saved / selectedBytes.length) * 100);
     document.getElementById('savedSize').textContent = fmt(saved) + ' (' + pct + '%)';
     
+    // Heading + note: say honestly whether the target was reached. The text
+    // layer is never touched, so a missed target still downloads a good file.
+    var resultsHeading = resultsEl.querySelector('h3');
+    if(resultsHeading){
+      resultsHeading.textContent = (result.bytes.length > targetBytes)
+        ? '⚠️ Target Not Reached — Text Preserved'
+        : '✅ Compression Complete';
+    }
     if(result.bytes.length > targetBytes){
       // Add a note that target wasn't fully reached
       var note = document.createElement('p');
       note.style.cssText = 'margin-top:12px;color:#e65100;font-size:.9rem;';
-      note.textContent = 'Note: Even maximum compression could not reach ' + fmt(targetBytes) + '. This is the smallest achievable size (' + result.quality + '). Try a larger target for better quality.';
+      var reason;
+      if(result.imagesFound === 0){
+        reason = 'This PDF has no embedded images, so there is nothing to shrink without touching the text. Your text is intact — try a larger target.';
+      } else if(result.imagesCompressed === 0){
+        reason = 'The images in this PDF use a format this tool cannot re-encode, so nothing was changed. Your text is intact — try a larger target.';
+      } else {
+        reason = 'Even maximum image compression could not reach ' + fmt(targetBytes) + '. This is the smallest size possible without damaging your text (' + result.quality + '). Try a larger target for better quality.';
+      }
+      note.textContent = 'Note: Target not reached — ' + reason;
       // Remove old note if any
       var oldNote = resultsEl.querySelector('.target-note');
       if(oldNote) oldNote.remove();
@@ -462,12 +823,8 @@ downloadBtn.addEventListener('click', function(){
   setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 30000);
 });
 
-// --- pdf.js worker ---
-if(window.pdfjsLib){
-  window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-}
 })();
+
 </script>
 
 <script id="tesw-js">
