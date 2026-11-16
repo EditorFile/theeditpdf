@@ -331,17 +331,33 @@ async function splitInHalf(bytes,opts,lib){
         tx=(tw-r.width*scale)/2; ty=(th-r.height*scale)/2;
       }
       pg.setCropBox(r.x,r.y,r.width,r.height);
-      if(scale!==1){
+      if(target!=="none"&&TARGET_SIZES[target]){
         /* Scaled half: new box starts at the origin and the content is
            moved/scaled into it by the wrapped cm matrix. */
         pg.setMediaBox(0,0,tw,th);
+        /* FIX 2026-11-16: the CropBox set above still sits in the ORIGINAL
+           coordinates, so it only intersected the new MediaBox in a thin
+           strip (top half of A4: 595x174pt) and viewers showed a blank /
+           clipped page. The CropBox must cover the new target box. */
+        pg.setCropBox(0,0,tw,th);
         var start=lib.PDFContentStream.of(out.context.obj({}),
           [lib.pushGraphicsState(), lib.concatTransformationMatrix(scale,0,0,scale,tx-r.x*scale,ty-r.y*scale)]);
         var end=lib.PDFContentStream.of(out.context.obj({}),[lib.popGraphicsState()]);
         var sRef=out.context.register(start), eRef=out.context.register(end);
-        var contents=pg.node.Contents();
-        if(contents&&!(contents instanceof lib.PDFArray)){
-          pg.node.set(lib.PDFName.of("Contents"),out.context.obj([contents]));
+        /* FIX 2026-11-16: pg.node.Contents() returns the LOOKED-UP stream
+           object, not its indirect reference. Wrapping that object in an
+           array inlined the bare stream dict (no stream bytes) into
+           /Contents, corrupting the file ("Illegal character in hex
+           string", "Weird page contents"). Use the raw /Contents entry
+           (the ref), exactly as pdf-lib's own PDFPageLeaf.normalize()
+           does: context.obj([contentsRef]). */
+        var contentsRaw=pg.node.get(lib.PDFName.of("Contents"));
+        if(contentsRaw){
+          var contentsLooked=out.context.lookup(contentsRaw);
+          if(contentsLooked&&!(contentsLooked instanceof lib.PDFArray)){
+            var contentsRef=(contentsRaw instanceof lib.PDFRef)?contentsRaw:out.context.register(contentsLooked);
+            pg.node.set(lib.PDFName.of("Contents"),out.context.obj([contentsRef]));
+          }
         }
         pg.node.wrapContentStreams(sRef,eRef);
       }else{
