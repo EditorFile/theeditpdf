@@ -3382,14 +3382,16 @@ function redMove(e){
   if(!drawing)return;
   e.preventDefault();
   var p=redPos(e),
+      rw=Math.abs(p.x-drawing.x0),rh=Math.abs(p.y-drawing.y0),
       x=Math.min(drawing.x0,p.x),y=Math.min(drawing.y0,p.y),
-      w=Math.abs(p.x-drawing.x0),h=Math.abs(p.y-drawing.y0);
+      w=Math.max(rw,16),h=Math.max(rh,16);
+  x-=(w-rw)/2;y-=(h-rh)/2;if(x<0)x=0;if(y<0)y=0;
   if(!drawing.el){drawing.el=document.createElement("div");drawing.el.className="red-draw";redLayer.appendChild(drawing.el)}
   drawing.el.style.left=x+"px";drawing.el.style.top=y+"px";drawing.el.style.width=w+"px";drawing.el.style.height=h+"px";
-  drawing.box={x:x,y:y,w:w,h:h};
+  drawing.box={x:x,y:y,w:w,h:h};drawing.raw=Math.max(rw,rh);
 }
 function redEnd(){
-  if(drawing&&drawing.box&&drawing.box.w>4&&drawing.box.h>4){
+  if(drawing&&drawing.box&&drawing.raw>12){
     (red.rects[red.page]=red.rects[red.page]||[]).push(drawing.box);
     var d=document.createElement("div"),b=drawing.box;d.className="red-box";
     d.style.left=b.x+"px";d.style.top=b.y+"px";d.style.width=b.w+"px";d.style.height=b.h+"px";
