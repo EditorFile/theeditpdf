@@ -29,7 +29,10 @@
 {"@type":"Question","name":"Can I reorder the images?","acceptedAnswer":{"@type":"Answer","text":"Yes. Drag any image card to move it. The PDF pages follow the order you set. You can also remove images you do not want."}},
 {"@type":"Question","name":"What page size should I choose?","acceptedAnswer":{"@type":"Answer","text":"A4 is the standard for most documents. Letter is the US standard. Fit to image makes each PDF page exactly the size of its image — best for photos and artwork."}},
 {"@type":"Question","name":"Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Conversion runs 100% in your browser using pdf-lib. Your images never leave your device."}},
-{"@type":"Question","name":"How many images can I add?","acceptedAnswer":{"@type":"Answer","text":"Up to 50 images, 20MB each. For larger batches, split them into multiple PDFs."}}
+{"@type":"Question","name":"How many images can I add?","acceptedAnswer":{"@type":"Answer","text":"Up to 50 images, 20MB each. For larger batches, split them into multiple PDFs."}},
+{"@type": "Question", "name": "Will my images be cropped or stretched?", "acceptedAnswer": {"@type": "Answer", "text": "No. Each image is scaled to fit inside the page while keeping its shape, and centred, so it is never cropped or stretched. On A4 or Letter a tall or narrow image leaves blank margins; choose Fit to image if you want each page exactly the size of its image."}},
+{"@type": "Question", "name": "What happens if I add a file that is not an image?", "acceptedAnswer": {"@type": "Answer", "text": "It is skipped. Only PNG, JPG and WebP files are accepted, and anything else you drop in is ignored. Images larger than 20MB are skipped too, with a message telling you which file was left out."}},
+{"@type": "Question", "name": "Can I add more images after I have created the PDF?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Drop in more images and click Create PDF again - the new PDF includes everything currently in the list, in the order you set. Your earlier download stays as it was; only the new file includes the extra images."}}
 ]}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
@@ -142,7 +145,11 @@ footer a{color:var(--gold);text-decoration:none}
 </div>
 </div>
 
-<section> <h2>How to combine PNG images into one PDF</h2> <p>Photos of documents are hard to send one by one and easy to lose track of. Combining them into a single PDF turns a scattered set of images into one tidy file.</p> <ol> <li>Open the tool — Open the PNG to PDF tool in your browser. It works on desktop and on your phone, with nothing to install.</li> <li>Add your images — Select the PNG images from your device, in the order you want them to appear in the PDF. They open locally in your browser, so nothing is uploaded to a server.</li> <li>Create the PDF — Build the PDF from your images. Each image becomes a page, in the order you added them.</li> <li>Download the result — Download the finished PDF and check the page order once. Your original images stay untouched on your device, so you can rebuild it any time.</li> </ol> <h2>When to use it</h2> <ul> <li>Scanned photos into one PDF — Photos of book pages, handwritten notes, or old documents become a single readable PDF instead of a dozen separate image files.</li> <li>Job applications — A CV, a cover letter, and certificates photographed or saved as images combine into one application file that reads in the right order.</li> <li>Receipts and expenses — Photos of receipts collected over a trip or a month become one expense PDF that is simple to file, forward, or print.</li> <li>School notes — Photos of class notes, whiteboards, or worksheets become one PDF per subject, much easier to revise from than a camera roll.</li> </ul> </section> <div class="faq">
+<section> <h2>How to combine PNG images into one PDF</h2> <p>Photos of documents are hard to send one by one and easy to lose track of. Combining them into a single PDF turns a scattered set of images into one tidy file.</p> <ol> <li>Open the tool — Open the PNG to PDF tool in your browser. It works on desktop and on your phone, with nothing to install.</li> <li>Add your images — Select the PNG images from your device, in the order you want them to appear in the PDF. They open locally in your browser, so nothing is uploaded to a server.</li> <li>Create the PDF — Build the PDF from your images. Each image becomes a page, in the order you added them.</li> <li>Download the result — Download the finished PDF and check the page order once. Your original images stay untouched on your device, so you can rebuild it any time.</li> </ol> <h2>When to use it</h2> <ul> <li>Scanned photos into one PDF — Photos of book pages, handwritten notes, or old documents become a single readable PDF instead of a dozen separate image files.</li> <li>Job applications — A CV, a cover letter, and certificates photographed or saved as images combine into one application file that reads in the right order.</li> <li>Receipts and expenses — Photos of receipts collected over a trip or a month become one expense PDF that is simple to file, forward, or print.</li> <li>School notes — Photos of class notes, whiteboards, or worksheets become one PDF per subject, much easier to revise from than a camera roll.</li> </ul>   <h2>What exactly does PNG to PDF do?</h2>
+  <p>PNG to PDF turns your images into a single PDF, with one image on each page in the order you set. Images are scaled to fit the page without cropping or stretching, so a narrow photo on an A4 page leaves blank space around it - choose Fit to image for edge-to-edge pages. The finished file downloads as images-to-pdf.pdf.</p>
+  <p>Related tools: <a href="/pdf-to-png">PDF to PNG</a> turns PDF pages into images; <a href="/jpg-to-pdf">JPG to PDF</a> is the same tool for JPG photos; <a href="/merge-pdf">Merge PDF</a> combines the finished PDF with other PDFs.</p>
+
+</section> <div class="faq">
 <h2>Frequently Asked Questions</h2>
 <div class="faq-item">
 <p class="faq-q">How do I convert PNG images to PDF?</p>
@@ -159,6 +166,18 @@ footer a{color:var(--gold);text-decoration:none}
 <div class="faq-item">
 <p class="faq-q">Are my images uploaded to a server?</p>
 <p>No. Conversion runs 100% in your browser using pdf-lib. Your images never leave your device.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Will my images be cropped or stretched?</p>
+<p>No. Each image is scaled to fit inside the page while keeping its shape, and centred, so it is never cropped or stretched. On A4 or Letter a tall or narrow image leaves blank margins; choose Fit to image if you want each page exactly the size of its image.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">What happens if I add a file that is not an image?</p>
+<p>It is skipped. Only PNG, JPG and WebP files are accepted, and anything else you drop in is ignored. Images larger than 20MB are skipped too, with a message telling you which file was left out.</p>
+</div>
+<div class="faq-item">
+<p class="faq-q">Can I add more images after I have created the PDF?</p>
+<p>Yes. Drop in more images and click Create PDF again - the new PDF includes everything currently in the list, in the order you set. Your earlier download stays as it was; only the new file includes the extra images.</p>
 </div>
 <div class="faq-item">
 <p class="faq-q">How many images can I add?</p>
