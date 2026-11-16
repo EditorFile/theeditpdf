@@ -25,7 +25,7 @@
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"How do I convert a PDF to grayscale?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, open the Grayscale tab and click Convert to Grayscale. Every page is re-rendered in black and white and downloaded as a new PDF — ideal for printing without colour ink."}},
+{"@type":"Question","name":"How do I convert a PDF to grayscale?","acceptedAnswer":{"@type":"Answer","text":"Upload your PDF, open the Grayscale tab and click Convert to Grayscale. Text and vectors are recoloured to grey in place and embedded images are re-encoded in grey, so the text stays selectable — ideal for printing without colour ink."}},
 {"@type":"Question","name":"What does flattening a PDF do?","acceptedAnswer":{"@type":"Answer","text":"Flattening merges fillable form fields into the page content, so the filled-in values can no longer be edited or accidentally cleared. The Flatten tab uses pdf-lib to flatten all AcroForm fields in your PDF."}},
 {"@type":"Question","name":"Can I resize a PDF to A4 or Letter?","acceptedAnswer":{"@type":"Answer","text":"Yes. The Resize tab offers A4, Letter, Legal, A5 and custom sizes. Choose 'Keep content position' to preserve vector text, or 'Scale content to fit' to stretch or shrink each page to fill the new size exactly."}},
 {"@type":"Question","name":"How do I add page numbers or a header to every page?","acceptedAnswer":{"@type":"Answer","text":"Use the Header/Footer tab: type your header and footer text, use {page} for the page number, {total} for the total page count and {date} for today's date, pick a position and font size, then apply to all pages at once."}},
@@ -137,18 +137,18 @@ footer a{color:var(--gold);text-decoration:none}
 <h3>Convert PDF to Grayscale</h3>
 <p class="desc">Turn every page black &amp; white — perfect for printing without colour ink.</p>
 <div class="field">
-<label>Quality (render resolution)</label>
+<label>Embedded image quality</label>
 <div class="opt-row" id="grayDpi">
-<button class="opt-btn" data-v="96">96 DPI (smaller file)</button>
-<button class="opt-btn active" data-v="150">150 DPI (recommended)</button>
-<button class="opt-btn" data-v="200">200 DPI (sharper)</button>
+<button class="opt-btn" data-v="0.92">High quality (larger file)</button>
+<button class="opt-btn active" data-v="0.85">Balanced (recommended)</button>
+<button class="opt-btn" data-v="0.75">Smaller file</button>
 </div>
 </div>
 <button class="action-btn" data-action="grayscale" disabled>Convert to Grayscale</button>
 <div class="progress"><div class="progress-bar"><div class="progress-fill"></div></div><div class="progress-text"></div></div>
 <div class="results"><h3>✅ Done</h3><p class="res-text"></p><button class="download-btn">⬇ Download Grayscale PDF</button></div>
 <div class="error"></div>
-<p class="note">Note: grayscale pages are re-rendered as images, so text is no longer selectable in the output. The original layout and quality are otherwise preserved.</p>
+<p class="note">Note: text and vector graphics are recoloured to grey in place, so text stays selectable and searchable. Only embedded images are re-encoded (in grey). Colours inside shadings, or images this tool cannot decode, are left unchanged.</p>
 </div>
 
 <!-- FLATTEN -->
@@ -386,45 +386,615 @@ function canvasJpegBytes(canvas){
   });
 }
 
-/* ---------- 1. GRAYSCALE ---------- */
-function doGrayscale(){
+/* The Edit PDF: vector-preserving Grayscale engine (Group D fix, 2026-11-16).
+   Replaces the old per-page canvas rasterizer (which destroyed the text
+   layer). Colour operators in page/Form content streams are rewritten to
+   DeviceGray in place; embedded images are re-encoded as grey JPEGs at
+   their original size (image helpers ported from the Nov 12
+   compress-pdf-to-size fix). Text, vectors and links are never touched. */
+var GRAY_OPERATORS = {};
+"q Q cm w J j M d ri i gs W W* BT ET Tc Tw Tz TL Tf Tr Ts Td TD Tm T* Tj TJ ' \" d0 d1 CS cs SC SCN sc scn G g RG rg K k re S s f F f* B B* b b* n m l c v y h sh BI ID EI Do MP DP BMC BDC EMC BX EX".split(" ").forEach(function(o){ GRAY_OPERATORS[o]=1; });
+
+function grayLum01(r,g,b){ return 0.299*r+0.587*g+0.114*b; }
+function grayFmt(v){ if(v<0)v=0; if(v>1)v=1; var s=(Math.round(v*10000)/10000).toFixed(4); s=s.replace(/\.?0+$/,""); return s===""?"0":s; }
+
+function grayTokenize(text){
+  var toks=[], i=0, n=text.length;
+  function isWS(c){ return c===" "||c==="\t"||c==="\r"||c==="\n"||c==="\f"||c==="\0"; }
+  function isDelim(c){ return c==="("||c===")"||c==="<"||c===">"||c==="["||c==="]"||c==="{"||c==="}"||c==="/"||c==="%"; }
+  while(i<n){
+    var c=text[i];
+    if(isWS(c)){ i++; continue; }
+    if(c==="%"){ while(i<n && text[i]!=="\n" && text[i]!=="\r") i++; continue; }
+    if(c==="("){
+      var start=i, depth=1; i++;
+      while(i<n && depth>0){ var ch=text[i]; if(ch==="\\"){ i+=2; continue; } if(ch==="(") depth++; else if(ch===")") depth--; i++; }
+      if(depth!==0) return null;
+      toks.push({t:"str", raw:text.slice(start,i)}); continue;
+    }
+    if(c==="<"){
+      if(text[i+1]==="<"){ toks.push({t:"op", raw:"<<"}); i+=2; continue; }
+      var s2=i; i++;
+      while(i<n && text[i]!==">") i++;
+      if(i>=n) return null;
+      i++;
+      toks.push({t:"hex", raw:text.slice(s2,i)}); continue;
+    }
+    if(c===">"){
+      if(text[i+1]===">"){ toks.push({t:"op", raw:">>"}); i+=2; continue; }
+      toks.push({t:"op", raw:">"}); i++; continue;
+    }
+    if(c==="["||c==="]"){ toks.push({t:"op", raw:c}); i++; continue; }
+    if(c==="/"){
+      var s3=i; i++;
+      while(i<n && !isWS(text[i]) && !isDelim(text[i])) i++;
+      toks.push({t:"name", raw:text.slice(s3,i)}); continue;
+    }
+    var s4=i;
+    while(i<n && !isWS(text[i]) && !isDelim(text[i])) i++;
+    if(i===s4) return null;
+    toks.push({t:"word", raw:text.slice(s4,i)});
+  }
+  return toks;
+}
+
+function grayRewriteContent(text){
+  // Inline images (BI ... ID <raw bytes> EI) cannot be tokenized safely:
+  // leave the whole stream untouched rather than risk corrupting it.
+  if(/(^|[\s])BI([\s]|$)/.test(text)) return null;
+  var toks=grayTokenize(text);
+  if(!toks) return null;
+  function isNumTok(t){ return t.t==="word" && /^[+-]?(\d+\.?\d*|\.\d+)$/.test(t.raw); }
+  function numVal(t){ return parseFloat(t.raw); }
+  var out=[], ops=[];
+  function flush(op){
+    if((op==="rg"||op==="RG") && ops.length===3 && ops.every(isNumTok)){
+      var g=grayFmt(grayLum01(numVal(ops[0]),numVal(ops[1]),numVal(ops[2])));
+      out.push({t:"word",raw:g},{t:"word",raw:(op==="rg"?"g":"G")});
+    } else if((op==="k"||op==="K") && ops.length===4 && ops.every(isNumTok)){
+      var c=numVal(ops[0]), m=numVal(ops[1]), y=numVal(ops[2]), k=numVal(ops[3]);
+      var g2=grayFmt(grayLum01((1-c)*(1-k),(1-m)*(1-k),(1-y)*(1-k)));
+      out.push({t:"word",raw:g2},{t:"word",raw:(op==="k"?"g":"G")});
+    } else if((op==="cs"||op==="CS") && ops.length===1 && ops[0].t==="name" && (ops[0].raw==="/DeviceRGB"||ops[0].raw==="/DeviceCMYK")){
+      out.push({t:"name",raw:"/DeviceGray"},{t:"word",raw:op});
+    } else if((op==="sc"||op==="SC"||op==="scn"||op==="SCN") && (ops.length===3||ops.length===4) && ops.every(isNumTok)){
+      var gv;
+      if(ops.length===3) gv=grayFmt(grayLum01(numVal(ops[0]),numVal(ops[1]),numVal(ops[2])));
+      else { var cc=numVal(ops[0]), mm=numVal(ops[1]), yy=numVal(ops[2]), kk=numVal(ops[3]);
+        gv=grayFmt(grayLum01((1-cc)*(1-kk),(1-mm)*(1-kk),(1-yy)*(1-kk))); }
+      out.push({t:"word",raw:gv},{t:"word",raw:op});
+    } else {
+      for(var i=0;i<ops.length;i++) out.push(ops[i]);
+      out.push({t:"word",raw:op});
+    }
+    ops=[];
+  }
+  for(var i=0;i<toks.length;i++){
+    var tk=toks[i];
+    if(tk.t==="word" && GRAY_OPERATORS[tk.raw]) flush(tk.raw);
+    else ops.push(tk);
+  }
+  for(var j=0;j<ops.length;j++) out.push(ops[j]);
+  return out.map(function(t){return t.raw;}).join(" ");
+}
+
+function grayFilterNames(dict){
+  var f = dict.lookup(PDFLib.PDFName.of('Filter'));
+  if(!f) return [];
+  if(f instanceof PDFLib.PDFName) return [f.asString().replace(/^\//, '')];
+  if(f instanceof PDFLib.PDFArray){
+    var out = [];
+    var arr = f.asArray();
+    for(var i = 0; i < arr.length; i++){
+      if(arr[i] instanceof PDFLib.PDFName) out.push(arr[i].asString().replace(/^\//, ''));
+    }
+    return out;
+  }
+  return [];
+}
+
+function grayNumValue(dict, name, fallback){
+  var v = dict.lookup(PDFLib.PDFName.of(name));
+  if(v && typeof v.asNumber === 'function') return v.asNumber();
+  return fallback;
+}
+
+// Walk page resources (recursing into Form XObjects) and collect unique
+// image XObjects. Returns [{ ref, refKey, stream, width, height }].
+// 1-bit image masks are skipped: they are tiny and cannot be JPEG-encoded.
+function grayCollectImages(doc){
+  var seen = {};
+  var found = [];
+  function walkResources(resDict){
+    if(!resDict || !(resDict instanceof PDFLib.PDFDict)) return;
+    var xobj = resDict.lookup(PDFLib.PDFName.of('XObject'));
+    if(!xobj) return;
+    var xobjDict = (xobj instanceof PDFLib.PDFDict) ? xobj : doc.context.lookup(xobj);
+    if(!xobjDict || !(xobjDict instanceof PDFLib.PDFDict)) return;
+    var keys = xobjDict.keys();
+    for(var i = 0; i < keys.length; i++){
+      var ref = xobjDict.get(keys[i]);
+      if(!(ref instanceof PDFLib.PDFRef)) continue;
+      var key = ref.tag;
+      if(seen[key]) continue;
+      seen[key] = true;
+      var obj = doc.context.lookup(ref);
+      if(!obj || !obj.dict) continue;
+      var subtype = obj.dict.lookup(PDFLib.PDFName.of('Subtype'));
+      var subtypeName = (subtype && subtype.asString) ? subtype.asString() : '';
+      if(subtypeName === '/Form'){
+        var sub = obj.dict.lookup(PDFLib.PDFName.of('Resources'));
+        var subDict = (sub instanceof PDFLib.PDFDict) ? sub : doc.context.lookup(sub);
+        walkResources(subDict);
+        continue;
+      }
+      if(subtypeName !== '/Image') continue;
+      var isMask = obj.dict.lookup(PDFLib.PDFName.of('ImageMask'));
+      if(isMask === PDFLib.PDFBool.True) continue;
+      found.push({
+        ref: ref,
+        refKey: key,
+        stream: obj,
+        width: grayNumValue(obj.dict, 'Width', 0),
+        height: grayNumValue(obj.dict, 'Height', 0)
+      });
+    }
+  }
+  var pages = doc.getPages();
+  for(var p = 0; p < pages.length; p++){
+    var res = pages[p].node.Resources();
+    if(!res) continue;
+    var resDict = (res instanceof PDFLib.PDFDict) ? res : doc.context.lookup(res);
+    walkResources(resDict);
+  }
+  return found;
+}
+
+// Decode a stream whose filter chain contains only ASCII85/ASCIIHex, Flate
+// or LZW layers (no image-format filters). Returns Uint8Array or null.
+function grayDecodeSimpleStream(dict, contents){
+  try {
+    var s = PDFLib.decodePDFRawStream({ dict: dict, contents: contents });
+    if(s && typeof s.decode === 'function') return s.decode();
+    if(s && typeof s.getBytes === 'function') return s.getBytes();
+  } catch(e){ /* unsupported filter */ }
+  return null;
+}
+
+// Undo PNG/TIFF predictors (pdf-lib's Flate decoder does not apply them).
+// Returns raw sample bytes, or null when the predictor is unsupported.
+function grayApplyPredictor(bytes, columns, colors, bpc, predictor){
+  if(!predictor || predictor === 1) return bytes;
+  var rowSize = Math.ceil((columns * colors * bpc) / 8);
+  if(predictor === 2){
+    // TIFF predictor: each sample differs from the same component of the
+    // previous pixel in the row.
+    var out = new Uint8Array(bytes.length);
+    var step = colors * Math.ceil(bpc / 8);
+    for(var i = 0; i < bytes.length; i++){
+      var left = (i % rowSize) >= step ? out[i - step] : 0;
+      out[i] = (bytes[i] + left) & 0xff;
+    }
+    return out;
+  }
+  if(predictor >= 10 && predictor <= 15){
+    // PNG optimum: every row starts with a filter-type byte.
+    var rows = Math.floor(bytes.length / (rowSize + 1));
+    var out2 = new Uint8Array(rows * rowSize);
+    var prev = new Uint8Array(rowSize);
+    var bpp = Math.max(1, Math.floor((colors * bpc) / 8));
+    var pos = 0;
+    for(var r = 0; r < rows; r++){
+      var type = bytes[pos++];
+      var row = bytes.subarray(pos, pos + rowSize);
+      pos += rowSize;
+      var cur = new Uint8Array(rowSize);
+      for(var x = 0; x < rowSize; x++){
+        var a = x >= bpp ? cur[x - bpp] : 0;
+        var b = prev[x];
+        var c = x >= bpp ? prev[x - bpp] : 0;
+        var v = row[x];
+        if(type === 0) cur[x] = v;
+        else if(type === 1) cur[x] = (v + a) & 0xff;
+        else if(type === 2) cur[x] = (v + b) & 0xff;
+        else if(type === 3) cur[x] = (v + ((a + b) >> 1)) & 0xff;
+        else if(type === 4){
+          var pp = a + b - c;
+          var pa = Math.abs(pp - a), pb = Math.abs(pp - b), pc = Math.abs(pp - c);
+          var pr = (pa <= pb && pa <= pc) ? a : (pb <= pc ? b : c);
+          cur[x] = (v + pr) & 0xff;
+        } else { return null; }
+      }
+      out2.set(cur, r * rowSize);
+      prev = cur;
+    }
+    return out2;
+  }
+  return null;
+}
+
+// Turn raw sample bytes into RGBA pixels. Supports 8bpc RGB / Gray / CMYK.
+// Returns { rgba, width, height } or null.
+function graySamplesToRgba(samples, width, height, colors, bpc){
+  if(bpc !== 8) return null;
+  var count = width * height;
+  var rgba = new Uint8ClampedArray(count * 4);
+  var i, g, c, m, y, kk;
+  if(colors === 3){
+    for(i = 0; i < count; i++){
+      rgba[i*4]   = samples[i*3];
+      rgba[i*4+1] = samples[i*3+1];
+      rgba[i*4+2] = samples[i*3+2];
+      rgba[i*4+3] = 255;
+    }
+  } else if(colors === 1){
+    for(i = 0; i < count; i++){
+      g = samples[i];
+      rgba[i*4] = g; rgba[i*4+1] = g; rgba[i*4+2] = g; rgba[i*4+3] = 255;
+    }
+  } else if(colors === 4){
+    for(i = 0; i < count; i++){
+      c = samples[i*4] / 255; m = samples[i*4+1] / 255;
+      y = samples[i*4+2] / 255; kk = samples[i*4+3] / 255;
+      rgba[i*4]   = Math.round(255 * (1 - c) * (1 - kk));
+      rgba[i*4+1] = Math.round(255 * (1 - m) * (1 - kk));
+      rgba[i*4+2] = Math.round(255 * (1 - y) * (1 - kk));
+      rgba[i*4+3] = 255;
+    }
+  } else {
+    return null;
+  }
+  return { rgba: rgba, width: width, height: height };
+}
+
+// DecodeParms for a given filter in the chain (dict, or one entry of an
+// array when the chain has per-filter parms).
+function grayDecodeParmsFor(dict, filters, wantedFilter){
+  var parms = dict.lookup(PDFLib.PDFName.of('DecodeParms'));
+  if(!parms) return null;
+  var idx = filters.indexOf(wantedFilter);
+  if(parms instanceof PDFLib.PDFArray){
+    var arr = parms.asArray();
+    var one = arr[Math.max(0, idx)];
+    return (one instanceof PDFLib.PDFDict) ? one : null;
+  }
+  return (parms instanceof PDFLib.PDFDict) ? parms : null;
+}
+
+// Decode one embedded image into something a canvas can draw.
+// Returns { kind:'jpeg', bytes, width, height } for JPEG images,
+// { kind:'raw', rgba, width, height } for Flate/LZW raster images,
+// or null when the image cannot be decoded (it is left untouched).
+async function grayDecodeImageForReencode(doc, img){
+  var dict = img.stream.dict;
+  var filters = grayFilterNames(dict);
+  var lastFilter = filters.length ? filters[filters.length - 1] : '';
+  if(lastFilter === 'DCTDecode'){
+    // JPEG data, possibly wrapped in ASCII85/ASCIIHex layers.
+    var asciiFilters = filters.slice(0, filters.length - 1);
+    if(asciiFilters.length === 0){
+      return { kind: 'jpeg', bytes: img.stream.getContents().slice(), width: img.width, height: img.height };
+    }
+    // Re-decode just the ASCII layers via pdf-lib.
+    var tmpDict = PDFLib.PDFDict.withContext(doc.context);
+    if(asciiFilters.length === 1){
+      tmpDict.set(PDFLib.PDFName.of('Filter'), PDFLib.PDFName.of(asciiFilters[0]));
+    } else {
+      var arr = PDFLib.PDFArray.withContext(doc.context);
+      for(var i = 0; i < asciiFilters.length; i++) arr.push(PDFLib.PDFName.of(asciiFilters[i]));
+      tmpDict.set(PDFLib.PDFName.of('Filter'), arr);
+    }
+    var bytes = grayDecodeSimpleStream(tmpDict, img.stream.getContents());
+    if(!bytes || bytes.length < 2 || bytes[0] !== 0xFF || bytes[1] !== 0xD8) return null;
+    return { kind: 'jpeg', bytes: bytes, width: img.width, height: img.height };
+  }
+  if(lastFilter === 'FlateDecode' || lastFilter === 'LZWDecode' || lastFilter === ''){
+    var decoded = grayDecodeSimpleStream(dict, img.stream.getContents());
+    if(!decoded) return null;
+    var parms = grayDecodeParmsFor(dict, filters, lastFilter || 'FlateDecode');
+    var predictor = parms ? grayNumValue(parms, 'Predictor', 1) : 1;
+    var colors = parms ? grayNumValue(parms, 'Colors', 0) : 0;
+    var bpc = parms ? grayNumValue(parms, 'BitsPerComponent', 0) : 0;
+    var columns = parms ? grayNumValue(parms, 'Columns', 0) : 0;
+    if(!bpc) bpc = grayNumValue(dict, 'BitsPerComponent', 8);
+    if(!columns) columns = img.width;
+    if(!colors){
+      var cs = dict.lookup(PDFLib.PDFName.of('ColorSpace'));
+      var csName = (cs && cs.asString) ? cs.asString() : '';
+      if(csName === '/DeviceRGB') colors = 3;
+      else if(csName === '/DeviceGray') colors = 1;
+      else if(csName === '/DeviceCMYK') colors = 4;
+      else return null; // Indexed / ICC / other: leave untouched
+    }
+    var samples = grayApplyPredictor(decoded, columns, colors, bpc, predictor);
+    if(!samples) return null;
+    var rgba = graySamplesToRgba(samples, img.width, img.height, colors, bpc);
+    if(!rgba) return null;
+    return { kind: 'raw', rgba: rgba.rgba, width: img.width, height: img.height };
+  }
+  // JPXDecode / CCITTFaxDecode / JBIG2Decode: cannot decode here — leave untouched.
+  return null;
+}
+
+
+function grayLoadImageFromBytes(bytes, mime){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(new Blob([bytes], { type: mime }));
+    var img = new Image();
+    img.onload = function(){ URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('Image could not be decoded.')); };
+    img.src = url;
+  });
+}
+
+
+// Swap one image XObject's data for freshly encoded JPEG bytes, keeping the
+// same object reference — every page that used the image keeps using it.
+function grayReplaceImage(doc, img, encoded){
+  var dict = PDFLib.PDFDict.withContext(doc.context);
+  dict.set(PDFLib.PDFName.of('Type'), PDFLib.PDFName.of('XObject'));
+  dict.set(PDFLib.PDFName.of('Subtype'), PDFLib.PDFName.of('Image'));
+  dict.set(PDFLib.PDFName.of('Width'), PDFLib.PDFNumber.of(encoded.width));
+  dict.set(PDFLib.PDFName.of('Height'), PDFLib.PDFNumber.of(encoded.height));
+  dict.set(PDFLib.PDFName.of('ColorSpace'), PDFLib.PDFName.of('DeviceRGB'));
+  dict.set(PDFLib.PDFName.of('BitsPerComponent'), PDFLib.PDFNumber.of(8));
+  dict.set(PDFLib.PDFName.of('Filter'), PDFLib.PDFName.of('DCTDecode'));
+  dict.set(PDFLib.PDFName.of('Length'), PDFLib.PDFNumber.of(encoded.bytes.length));
+  // Keep the soft mask (transparency) and interpolation flag, if any.
+  var oldDict = img.stream.dict;
+  var smask = oldDict.get(PDFLib.PDFName.of('SMask'));
+  if(smask) dict.set(PDFLib.PDFName.of('SMask'), smask);
+  var interp = oldDict.get(PDFLib.PDFName.of('Interpolate'));
+  if(interp) dict.set(PDFLib.PDFName.of('Interpolate'), interp);
+  doc.context.assign(img.ref, PDFLib.PDFRawStream.of(dict, encoded.bytes));
+}
+
+
+
+function grayCanvasJpegBytes(canvas, quality){
+  return new Promise(function(resolve, reject){
+    if(canvas.toBlob){
+      canvas.toBlob(function(blob){
+        if(!blob){ reject(new Error('Image encoding failed.')); return; }
+        var reader = new FileReader();
+        reader.onload = function(){ resolve(new Uint8Array(reader.result)); };
+        reader.onerror = function(){ reject(new Error('Image encoding failed.')); };
+        reader.readAsArrayBuffer(blob);
+      }, 'image/jpeg', quality);
+    } else {
+      try { resolve(grayDataUrlToBytes(canvas.toDataURL('image/jpeg', quality))); }
+      catch(e){ reject(new Error('Image encoding failed.')); }
+    }
+  });
+}
+
+function grayDataUrlToBytes(dataUrl){
+  var base64 = dataUrl.split(',')[1];
+  var binary = atob(base64);
+  var len = binary.length;
+  var arr = new Uint8Array(len);
+  for(var i = 0; i < len; i++) arr[i] = binary.charCodeAt(i);
+  return arr;
+}
+
+// Draw the decoded image onto a canvas at its ORIGINAL size, convert every
+// pixel to grey (luminance), and return fresh JPEG bytes. Dimensions are
+// never changed: grayscale is a colour conversion, not a resize.
+// NOTE: canvas JPEG output is always RGB (3 components), so the replacement
+// XObject keeps ColorSpace DeviceRGB with R==G==B pixels; a 1-component
+// JPEG cannot be produced from a browser canvas.
+async function grayReencodeImage(src, quality){
+  var w = src.width, h = src.height;
+  var canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, w, h);
+  if(src.kind === 'jpeg'){
+    var drawn = false;
+    if(window.createImageBitmap){
+      try {
+        var bmp = await createImageBitmap(new Blob([src.bytes], { type: 'image/jpeg' }));
+        ctx.drawImage(bmp, 0, 0, w, h);
+        if(bmp.close) bmp.close();
+        drawn = true;
+      } catch(e){ drawn = false; }
+    }
+    if(!drawn){
+      var img = await grayLoadImageFromBytes(src.bytes, 'image/jpeg');
+      ctx.drawImage(img, 0, 0, w, h);
+    }
+  } else {
+    var srcCanvas = document.createElement('canvas');
+    srcCanvas.width = src.width;
+    srcCanvas.height = src.height;
+    var sctx = srcCanvas.getContext('2d');
+    sctx.putImageData(new ImageData(src.rgba, src.width, src.height), 0, 0);
+    ctx.drawImage(srcCanvas, 0, 0, w, h);
+  }
+  var imgData = ctx.getImageData(0, 0, w, h);
+  var d = imgData.data;
+  for(var i = 0; i < d.length; i += 4){
+    var g = Math.round(0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2]);
+    d[i] = g; d[i+1] = g; d[i+2] = g;
+  }
+  ctx.putImageData(imgData, 0, 0);
+  var bytes = await grayCanvasJpegBytes(canvas, quality);
+  return { bytes: bytes, width: w, height: h };
+}
+
+
+// --- content-stream colour rewriting (vector-preserving) ---
+// Decode one content stream. Returns the decoded bytes, or null when the
+// stream cannot be decoded (it is left untouched).
+function grayDecodeStream(dict, contents){
+  try {
+    var s = PDFLib.decodePDFRawStream({ dict: dict, contents: contents });
+    if(s && typeof s.decode === 'function') return s.decode();
+    if(s && typeof s.getBytes === 'function') return s.getBytes();
+  } catch(e){ /* unsupported filter */ }
+  return null;
+}
+
+// Latin-1 round-trip: preserves every byte of literal strings exactly.
+function grayTextDecode(bytes){
+  var s = '';
+  for(var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+  return s;
+}
+function grayTextEncode(str){
+  var b = new Uint8Array(str.length);
+  for(var i = 0; i < str.length; i++) b[i] = str.charCodeAt(i) & 0xff;
+  return b;
+}
+
+// Rewrite one decoded content stream's colour operators to grey.
+// Returns { changed, bytes } or null when the stream must be left alone.
+function grayRewriteStreamObject(doc, streamObj){
+  if(!streamObj || !streamObj.dict) return null;
+  var decoded = grayDecodeStream(streamObj.dict, streamObj.getContents());
+  if(!decoded) return null;
+  var text = grayTextDecode(decoded);
+  var rewritten = grayRewriteContent(text);
+  if(rewritten === null || rewritten === text) return null;
+  return { changed: true, bytes: grayTextEncode(rewritten) };
+}
+
+// Rewrite a page's Contents entry (ref, direct stream, or array of either).
+// Returns the number of streams rewritten.
+function grayReplacePageContents(doc, page){
+  var entry = page.node.get(PDFLib.PDFName.of('Contents'));
+  if(!entry) return 0;
+  var changed = 0;
+  if(entry instanceof PDFLib.PDFRef){
+    var obj = doc.context.lookup(entry);
+    var r = grayRewriteStreamObject(doc, obj);
+    if(r){ doc.context.assign(entry, doc.context.flateStream(r.bytes)); changed++; }
+  } else if(entry instanceof PDFLib.PDFArray){
+    var arr = entry.asArray();
+    var newArr = PDFLib.PDFArray.withContext(doc.context);
+    for(var i = 0; i < arr.length; i++){
+      var el = arr[i];
+      if(el instanceof PDFLib.PDFRef){
+        var o2 = doc.context.lookup(el);
+        var r2 = grayRewriteStreamObject(doc, o2);
+        if(r2){ doc.context.assign(el, doc.context.flateStream(r2.bytes)); changed++; }
+        newArr.push(el);
+      } else if(el && el.dict){
+        var r3 = grayRewriteStreamObject(doc, el);
+        if(r3){ newArr.push(doc.context.flateStream(r3.bytes)); changed++; }
+        else newArr.push(el);
+      } else {
+        newArr.push(el);
+      }
+    }
+    if(changed > 0) page.node.set(PDFLib.PDFName.of('Contents'), newArr);
+  } else if(entry && entry.dict){
+    var r4 = grayRewriteStreamObject(doc, entry);
+    if(r4){ page.node.set(PDFLib.PDFName.of('Contents'), doc.context.flateStream(r4.bytes)); changed++; }
+  }
+  return changed;
+}
+
+// Rewrite colour operators inside Form XObjects (e.g. embedded pages),
+// preserving each Form's own dict (BBox, Matrix, Resources, Group).
+// Returns the number of Form streams rewritten. Forms that cannot be
+// decoded or resolved are skipped, never broken.
+function grayRewriteFormXObjects(doc){
+  var seen = {};
+  var changed = 0;
+  function walkResources(resDict){
+    if(!resDict || !(resDict instanceof PDFLib.PDFDict)) return;
+    var xobj = resDict.lookup(PDFLib.PDFName.of('XObject'));
+    if(!xobj) return;
+    var xobjDict = (xobj instanceof PDFLib.PDFDict) ? xobj : doc.context.lookup(xobj);
+    if(!xobjDict || !(xobjDict instanceof PDFLib.PDFDict)) return;
+    var keys = xobjDict.keys();
+    for(var i = 0; i < keys.length; i++){
+      var ref = xobjDict.get(keys[i]);
+      if(!(ref instanceof PDFLib.PDFRef)) continue;
+      if(seen[ref.tag]) continue;
+      seen[ref.tag] = true;
+      var obj = doc.context.lookup(ref);
+      if(!obj || !obj.dict) continue;
+      var subtype = obj.dict.lookup(PDFLib.PDFName.of('Subtype'));
+      var subtypeName = (subtype && subtype.asString) ? subtype.asString() : '';
+      if(subtypeName === '/Form'){
+        var sub = obj.dict.lookup(PDFLib.PDFName.of('Resources'));
+        var subDict = (sub instanceof PDFLib.PDFDict) ? sub : doc.context.lookup(sub);
+        walkResources(subDict);
+        var r = grayRewriteStreamObject(doc, obj);
+        if(!r) continue;
+        var newDict = {};
+        var dk = obj.dict.keys();
+        for(var j = 0; j < dk.length; j++){
+          var kn = dk[j].toString().replace(/^\//, '');
+          if(kn === 'Filter' || kn === 'DecodeParms' || kn === 'Length') continue;
+          newDict[kn] = obj.dict.get(dk[j]);
+        }
+        doc.context.assign(ref, doc.context.flateStream(r.bytes, newDict));
+        changed++;
+      }
+    }
+  }
+  var pages = doc.getPages();
+  for(var p = 0; p < pages.length; p++){
+    var res = pages[p].node.Resources();
+    if(!res) continue;
+    var resDict = (res instanceof PDFLib.PDFDict) ? res : doc.context.lookup(res);
+    walkResources(resDict);
+  }
+  return changed;
+}
+
+
+/* ---------- 1. GRAYSCALE (vector-preserving) ---------- */
+// Strategy: NEVER render pages to canvas. Text and vector graphics are
+// recoloured to grey in place by rewriting the colour operators in each
+// page's content stream (rg/RG, k/K, cs/CS, sc/scn -> DeviceGray via
+// luminance); embedded images are decoded and re-encoded as grey JPEGs at
+// their original size. Anything that cannot be converted safely (shading,
+// Pattern/Indexed/ICC images, inline images, undecodable streams) is left
+// untouched rather than breaking the page, and the result message says so.
+async function doGrayscale(){
   var e=panelEls("grayscale");
   if(!needFile(e))return;
   e.btn.disabled=true;
-  var dpi=parseInt(document.querySelector("#grayDpi .opt-btn.active").dataset.v,10);
-  setProgress(e,5,"Loading PDF…");
-  var total=0;
-  loadPdfJs().then(function(doc){
-    total=doc.numPages;
-    return PDFLib.PDFDocument.create().then(function(out){
-      var chain=Promise.resolve();
-      for(var i=1;i<=total;i++){
-        (function(pn){
-          chain=chain.then(function(){
-            setProgress(e,Math.round(5+90*(pn-1)/total),"Converting page "+pn+" of "+total+"…");
-            return renderPage(doc,pn,dpi).then(function(r){
-              toGray(r.canvas);
-              return canvasJpegBytes(r.canvas).then(function(jpg){
-                return out.embedJpg(jpg).then(function(img){
-                  var pw=r.width*72/dpi,ph=r.height*72/dpi;
-                  var page=out.addPage([pw,ph]);
-                  page.drawImage(img,{x:0,y:0,width:pw,height:ph});
-                });
-              });
-            });
-          });
-        })(i);
-      }
-      return chain.then(function(){
-        setProgress(e,97,"Saving…");
-        return out.save();
-      });
-    });
-  }).then(function(bytes){
-    showResult(e,"Converted "+total+" page"+(total>1?"s":"")+" to grayscale.",bytes,baseName()+"-grayscale.pdf");
-  }).catch(function(err){
+  var qEl=document.querySelector("#grayDpi .opt-btn.active");
+  var quality=qEl?parseFloat(qEl.dataset.v)||0.85:0.85;
+  setProgress(e,5,"Loading PDF\u2026");
+  try{
+    var doc=await PDFLib.PDFDocument.load(fileBytes.slice());
+    var total=doc.getPageCount();
+    var pages=doc.getPages();
+    var streamsChanged=0, formsChanged=0;
+    for(var pi=0;pi<pages.length;pi++){
+      setProgress(e,Math.round(5+50*pi/total),"Recolouring page "+(pi+1)+" of "+total+"\u2026");
+      streamsChanged+=grayReplacePageContents(doc, pages[pi]);
+    }
+    formsChanged=grayRewriteFormXObjects(doc);
+    setProgress(e,60,"Converting embedded images\u2026");
+    var imgs=grayCollectImages(doc);
+    var imgsConverted=0, imgsSkipped=0;
+    for(var k=0;k<imgs.length;k++){
+      try{
+        var src=await grayDecodeImageForReencode(doc, imgs[k]);
+        if(!src){ imgsSkipped++; continue; }
+        var enc=await grayReencodeImage(src, quality);
+        grayReplaceImage(doc, imgs[k], enc);
+        imgsConverted++;
+      }catch(err){ imgsSkipped++; }
+    }
+    setProgress(e,90,"Saving\u2026");
+    var bytes=await doc.save();
+    var msg="Converted "+total+" page"+(total>1?"s":"")+" to grayscale. Text and vector graphics stay selectable; "+imgsConverted+" embedded image"+(imgsConverted===1?"":"s")+" re-encoded in grey.";
+    if(imgsSkipped>0) msg+=" "+imgsSkipped+" image"+(imgsSkipped===1?"":"s")+" could not be converted and "+(imgsSkipped===1?"was":"were")+" left unchanged.";
+    if(streamsChanged===0&&formsChanged===0&&imgsConverted===0) msg+=" No colour was found to convert \u2014 the file may already be grayscale.";
+    showResult(e,msg,bytes,baseName()+"-grayscale.pdf");
+  }catch(err){
     showError(e,"Conversion failed: "+(err&&err.message?err.message:err));
-  }).finally(function(){e.btn.disabled=false;});
+  }finally{e.btn.disabled=false;}
 }
 
 /* ---------- 2. FLATTEN ---------- */
@@ -616,6 +1186,11 @@ document.querySelectorAll(".action-btn").forEach(function(b){
     else if(a==="nup")doNup();
   });
 });
+
+/* Exposed for automated tests (no UI effect). */
+window.__tepBundle = { doGrayscale: doGrayscale, rewriteContent: grayRewriteContent,
+  setFile: function(b, n){ fileBytes = b; fileName = n || "document.pdf"; },
+  getOut: function(){ return { bytes: outBytes, name: outName }; } };
 })();
 </script>
 </body>
