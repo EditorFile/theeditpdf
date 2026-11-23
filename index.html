@@ -189,6 +189,8 @@ transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
 .option-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }
+.actions{flex-wrap:wrap}
+#metaFields,#unlockFields,#protectFields{width:100%}
 .btn { appearance: none; border: 0; border-radius: 11px; padding: 12px 17px; font-weight: 700; cursor: pointer; }
 .btn.secondary { background: var(--surface-2); }
 .btn.primary { background: var(--accent); color: white; min-width: 150px; }
@@ -1316,7 +1318,7 @@ async function _saveFlow(b,n){
 var r=b?{blob:b,name:n||"document.pdf"}:_res();
 if(!r||!r.blob){ne("Save the PDF first.","error");return}
 var name=(r.name||"document.pdf");
-if(_rnRow&&_rnRow.hidden&&!_co.hidden){_showRename();if(_dl){_dl.innerHTML="\U0001f4be Choose folder & save";_dl.dataset.armed="1"}return}
+if(_rnRow&&_rnRow.hidden&&!_co.hidden){_showRename();if(_dl){_dl.innerHTML="\uD83D\uDCBE Choose folder & save";_dl.dataset.armed="1"}return}
 if(_rnRow&&!_rnRow.hidden){_applyName(_rnInput.value);_resetDl();name=_name();r=_res()}
 try{
 if(window.showSaveFilePicker){
@@ -1324,7 +1326,7 @@ var h=await window.showSaveFilePicker({suggestedName:name,types:_saveTypes(name)
 var w=await h.createWritable();await w.write(r.blob);await w.close();
 ne("Saved successfully.","success");return}
 throw new Error("no-fsa");
-}catch(e){if(e&&e.name==="AbortError")return}
+}catch(e){if(e&&e.name==="AbortError"){/* cancelled - fall through to the regular download below */}}
 var u=URL.createObjectURL(r.blob),a=document.createElement("a");
 a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();
 setTimeout(function(){URL.revokeObjectURL(u)},3e4);
